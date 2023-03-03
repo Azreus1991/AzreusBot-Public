@@ -1,0 +1,3091 @@
+
+# import libraries
+import pandas as pd
+import numpy as np
+import talib
+import datetime as dt
+import time
+import random
+import MetaTrader5 as mt5
+
+# establish connection with MetaTrader 5
+if not mt5.initialize():
+    print("initialize() failed, error code =",mt5.last_error())
+    quit()
+
+# define function for trading signals
+def get_signal(symbol, timeframe, strategy, **kwargs):
+
+    # get historical data
+    data = mt5.copy_rates_from(symbol, timeframe, dt.datetime.now(), 1000)
+
+    # create dataframe
+    df = pd.DataFrame(data)
+    df['time'] = pd.to_datetime(df['time'], unit='s')
+    df.set_index('time', inplace=True)
+
+    # add indicators
+    df['SMA'] = talib.SMA(df['close'], timeperiod=20)
+    df['EMA'] = talib.EMA(df['close'], timeperiod=20)
+    df['WMA'] = talib.WMA(df['close'], timeperiod=20)
+    df['MACD'], df['MACD_signal'], df['MACD_hist'] = talib.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    df['RSI'] = talib.RSI(df['close'], timeperiod=14)
+    df['stoch_k'], df['stoch_d'] = talib.STOCH(df['high'], df['low'], df['close'], fastk_period=5, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+    df['BB_upper'], df['BB_middle'], df['BB_lower'] = talib.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+    df['fib_retracement'] = talib.FIBONACCI_RETRACEMENT(df['high'], df['low'], df['close'], 0.236, 0.382, 0.618)
+    df['fib_extension'] = talib.FIBONACCI_EXTENSION(df['high'], df['low'], df['close'], 0.618, 1, 1.618)
+    df['fib_arcs_up'], df['fib_arcs_down'] = talib.FIBONACCI_ARC(df['high'], df['low'], df['close'], 0.236, 0.382, 0.618)
+    df['tenkan_sen'], df['kijun_sen'], df['senkou_span_a'], df['senkou_span_b'], df['chikou_span'] = talib.ICHIMOKU(df['high'], df['low'], timeperiod1=9, timeperiod2=26, timeperiod3=52)
+    df['ADX'] = talib.ADX(df['high'], df['low'], df['close'], timeperiod=14)
+    df['CCI'] = talib.CCI(df['high'], df['low'], df['close'], timeperiod=14)
+    df['SAR'] = talib.SAR(df['high'], df['low'], acceleration=0.02, maximum=0.2)
+    df['aroon_down'], df['aroon_up'] = talib.AROON(df['high'], df['low'], timeperiod=14)
+    df['OBV'] = talib.OBV(df['close'], df['volume'])
+    df['MFI'] # Import required libraries
+import pandas as pd
+import numpy as np
+import talib as ta
+import MetaTrader5 as mt5
+import datetime as dt
+import time
+import pytz
+
+# Set up MetaTrader 5 connection
+mt5.initialize()
+
+# Define list of currency pairs to trade
+currency_pairs = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"]
+
+# Define trading parameters
+lot_size = 0.01  # Size of each trade (in lots)
+risk_reward_ratio = 2  # Ratio of risk to reward for each trade
+stop_loss_pct = 0.01  # Percentage of account balance to use for stop loss
+take_profit_pct = 0.02  # Percentage of account balance to use for take profit
+max_trades = 5  # Maximum number of trades to have open at any given time
+
+# Define list of indicators to use
+indicators = {
+    "SMA": ta.SMA,
+    "EMA": ta.EMA,
+    "WMA": ta.WMA,
+    "MACD": ta.MACD,
+    "RSI": ta.RSI,
+    "STOCH": ta.STOCH,
+    "BBANDS": ta.BBANDS,
+    "FIBO": ta.FIBO,
+    "ICHIMOKU": ta.ICHIMOKU,
+    "ADX": ta.ADX,
+    "CCI": ta.CCI,
+    "SAR": ta.SAR,
+    "AROON": ta.AROON,
+    "OBV": ta.OBV,
+    "MFI": ta.MFI,
+    "CHAIKIN": ta.CHAIKIN,
+    "WILLR": ta.WILLR,
+    "ROC": ta.ROC,
+    "MAENV": ta.MAENV,
+    "KELCH": ta.KELCH,
+    "DONCH": ta.DONCH
+}
+
+# Define list of trading strategies to use
+strategies = {
+    "TREND": trend_trading,
+    "BREAKOUT": breakout_trading,
+    "SCALPING": scalping,
+    "SWING": swing_trading,
+    "POSITION": position_trading,
+    "DAY": day_trading,
+    "PRICE ACTION": price_action_trading,
+    "SUPP/RESIST": support_resistance_trading,
+    "DIVERGENCE": divergence_trading,
+    "MULTI-TIMEFRAME": multi_timeframe_trading,
+    "ELLIOTT WAVE": elliott_wave_trading,
+    "HARMONIC": harmonic_trading,
+    "NEWS": news_trading,
+    "RANGE": range_trading,
+    "MEAN REVERSION": mean_reversion_trading,
+    "VOLATILITY": volatility_trading
+}
+
+# Define function to retrieve historical price data
+def get_price_data(symbol, timeframe, start, end):
+    """
+    Retrieves historical price data for a given symbol, timeframe, start and end date.
+    """
+    # Set the timezone to UTC
+    timezone = pytz.timezone("Etc/UTC")
+    
+    # Convert the start and end dates to UTC
+    start = dt.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+    start = timezone.localize(start)
+    end = dt.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+    end = timezone.localize(end)
+    
+    # Retrieve the price data
+    price_data = mt5.copy_rates
+# Initialize indicators
+    sma = talib.SMA(close, timeperiod=14)
+    ema = talib.EMA(close, timeperiod=14)
+    wma = talib.WMA(close, timeperiod=14)
+    macd, macdsignal, macdhist = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
+    rsi = talib.RSI(close, timeperiod=14)
+    slowk, slowd = talib.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowd_period=3)
+    upper, middle, lower = talib.BBANDS(close, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+    fib_retracement = talib.FIBONACCI_RETRACEMENT(high, low, close, retracement_levels=[0.236, 0.382, 0.618, 1.0])
+    fib_extension = talib.FIBONACCI_EXT(high, low, close, extension_levels=[0.618, 1.0, 1.618])
+    fib_arcs = talib.FIBONACCI_ARC(high, low, close, factor=0.5)
+    tenkan, kijun, senkou_a, senkou_b, chikou = talib.ICHIMOKU(high, low, timeperiod1=9, timeperiod2=26, timeperiod3=52)
+    adx = talib.ADX(high, low, close, timeperiod=14)
+    cci = talib.CCI(high, low, close, timeperiod=14)
+    sar = talib.SAR(high, low, acceleration=0.02, maximum=0.2)
+    aroon_down, aroon_up = talib.AROON(high, low, timeperiod=14)
+    obv = talib.OBV(close, volume)
+    mfi = talib.MFI(high, low, close, volume, timeperiod=14)
+    chaikin = talib.ADOSC(high, low, close, volume, fastperiod=3, slowperiod=10)
+    willr = talib.WILLR(high, low, close, timeperiod=14)
+    roc = talib.ROC(close, timeperiod=10)
+    upper, middle, lower = talib.MA_Envelope(close, timeperiod=14, matype=0)
+    upper, middle, lower = talib.KC(high, low, close, timeperiod=14)
+    upper, middle, lower = talib.DONCHIAN(high, low, close, timeperiod=20)
+
+    # Initialize strategy variables
+    position = 0  # 1: long, -1: short, 0: flat
+    entry_price = 0
+    exit_price = 0
+    stop_loss = 0
+    take_profit = 0
+    trade_direction = 'long'  # 'long' or 'short'
+
+    # Initialize performance variables
+    trades = 0
+    win_trades = 0
+    loss_trades = 0
+    total_profit = 0
+    max_drawdown = 0
+
+    # Define strategy functions
+    def trend_trading():
+        global position, entry_price, exit_price, stop_loss, take_profit, trade_direction
+
+        if sma[-1] > sma[-2] and ema[-1] > ema[-2] and rsi[-
+# Bollinger Bands
+def bbands(data, period=20, std_dev=2):
+    rolling_mean = data['Close'].rolling(window=period).mean()
+    rolling_std = data['Close'].rolling(window=period).std()
+    upper_band = rolling_mean + (rolling_std * std_dev)
+    lower_band = rolling_mean - (rolling_std * std_dev)
+    return rolling_mean, upper_band, lower_band
+
+
+# Fibonacci Retracement
+def fib_retracement(data, low, high):
+    fib_levels = [0.236, 0.382, 0.5, 0.618, 0.786]
+    diff = high - low
+    fib_retracements = []
+    for level in fib_levels:
+        fib_retracements.append(high - (diff * level))
+    return fib_retracements
+
+
+# Fibonacci Extensions
+def fib_extension(data, low, high):
+    fib_levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.236, 1.382, 1.5, 1.618, 1.786, 2.0]
+    diff = high - low
+    fib_extensions = []
+    for level in fib_levels:
+        fib_extensions.append(high + (diff * level))
+    return fib_extensions
+
+
+# Fibonacci Arcs
+def fib_arcs(data, low, high):
+    fib_levels = [0, 23.6, 38.2, 50, 61.8, 100]
+    diff = high - low
+    fib_arcs = []
+    for level in fib_levels:
+        fib_arcs.append(high - (diff * level / 100))
+    return fib_arcs
+
+
+# Ichimoku Cloud
+def ichimoku_cloud(data):
+    conversion_line = (data['High'].rolling(window=9).max() + data['Low'].rolling(window=9).min()) / 2
+    base_line = (data['High'].rolling(window=26).max() + data['Low'].rolling(window=26).min()) / 2
+    span_A = (conversion_line + base_line) / 2
+    span_B = (data['High'].rolling(window=52).max() + data['Low'].rolling(window=52).min()) / 2
+    return conversion_line, base_line, span_A, span_B
+
+
+# Average Directional Index (ADX)
+def adx(data, period=14):
+    high = data['High']
+    low = data['Low']
+    close = data['Close']
+    tr1 = high - low
+    tr2 = abs(high - close.shift())
+    tr3 = abs(low - close.shift())
+    true_range = pd.DataFrame({'tr1': tr1, 'tr2': tr2, 'tr3': tr3}).max(axis=1)
+    atr = true_range.rolling(window=period).mean()
+    up = high - high.shift()
+    down = low.shift() - low
+    plus_dm = np.where((up > down) & (up > 0), up, 0)
+    minus_dm = np.where((down > up) & (down > 0), down, 0)
+    plus_dm = pd.Series(plus_dm).rolling(window=period).mean()
+    minus_dm = pd.Series(minus_dm).rolling(window=period).mean()
+    di_plus = 100 * (plus_dm / atr)
+    di_minus = 100 * (minus_dm / atr)
+    dx = 100 * abs((
+    # Define the function for the Stochastic Oscillator indicator
+    def stoch(high, low, close, k_period, d_period):
+        """
+        Computes the Stochastic Oscillator indicator.
+        
+        :param high: A numpy array of high prices
+        :param low: A numpy array of low prices
+        :param close: A numpy array of closing prices
+        :param k_period: An integer indicating the number of periods to use in the %K calculation
+        :param d_period: An integer indicating the number of periods to use in the %D calculation
+        :return: A tuple of two numpy arrays containing the %K and %D values respectively
+        """
+        # Calculate the lowest low and highest high over the k_period
+        low_min = np.min(low[-k_period:])
+        high_max = np.max(high[-k_period:])
+        
+        # Calculate %K
+        k = (close[-1] - low_min) / (high_max - low_min) * 100
+        
+        # Calculate %D
+        d = np.mean(k[-d_period:])
+        
+        return k, d
+
+
+    # Define the function for the Bollinger Bands indicator
+    def bollinger_bands(close, period, n_std):
+        """
+        Computes the Bollinger Bands indicator.
+        
+        :param close: A numpy array of closing prices
+        :param period: An integer indicating the number of periods to use in the calculation
+        :param n_std: An integer indicating the number of standard deviations to use for the bands
+        :return: A tuple of three numpy arrays containing the upper, middle, and lower bands respectively
+        """
+        # Calculate the rolling mean and standard deviation
+        sma = np.mean(close[-period:])
+        std = np.std(close[-period:])
+        
+        # Calculate the upper and lower bands
+        upper_band = sma + n_std * std
+        lower_band = sma - n_std * std
+        
+        # Calculate the middle band
+        middle_band = sma
+        
+        return upper_band, middle_band, lower_band
+
+
+    # Define the function for the Fibonacci Retracement indicator
+    def fibonacci_retracement(high, low, period):
+        """
+        Computes the Fibonacci Retracement levels.
+        
+        :param high: A numpy array of high prices
+        :param low: A numpy array of low prices
+        :param period: An integer indicating the number of periods to use in the calculation
+        :return: A numpy array of the retracement levels
+        """
+        # Calculate the highest high and lowest low over the period
+        high_max = np.max(high[-period:])
+        low_min = np.min(low[-period:])
+        
+        # Calculate the distance between the high and low
+        dist = high_max - low_min
+        
+        # Calculate the retracement levels
+        levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+        retracements = []
+        for level in levels:
+            retracements.append(high_max - level * dist)
+        
+        return np.array(retracements)
+# Define the Bollinger Bands indicator
+def bollinger_bands(df, window=20, std=2):
+    """Calculates the upper and lower Bollinger Bands for the given DataFrame"""
+    rolling_mean = df['Close'].rolling(window=window).mean()
+    rolling_std = df['Close'].rolling(window=window).std()
+    upper_band = rolling_mean + (rolling_std * std)
+    lower_band = rolling_mean - (rolling_std * std)
+    return upper_band, lower_band
+
+# Define the Fibonacci retracement indicator
+def fibonacci_retracement(df, high_col='High', low_col='Low', level_1=0.236, level_2=0.382, level_3=0.618):
+    """Calculates the Fibonacci retracement levels for the given DataFrame"""
+    high = df[high_col].max()
+    low = df[low_col].min()
+    diff = high - low
+    level_1_val = high - (level_1 * diff)
+    level_2_val = high - (level_2 * diff)
+    level_3_val = high - (level_3 * diff)
+    return level_1_val, level_2_val, level_3_val
+
+# Define the Fibonacci extensions indicator
+def fibonacci_extensions(df, high_col='High', low_col='Low', level_1=0.236, level_2=0.382, level_3=0.618):
+    """Calculates the Fibonacci extension levels for the given DataFrame"""
+    high = df[high_col].max()
+    low = df[low_col].min()
+    diff = high - low
+    level_1_val = high + (level_1 * diff)
+    level_2_val = high + (level_2 * diff)
+    level_3_val = high + (level_3 * diff)
+    return level_1_val, level_2_val, level_3_val
+
+# Define the Fibonacci arcs indicator
+def fibonacci_arcs(df, high_col='High', low_col='Low', level_1=0.382, level_2=0.5, level_3=0.618):
+    """Calculates the Fibonacci arcs for the given DataFrame"""
+    high = df[high_col].max()
+    low = df[low_col].min()
+    diff = high - low
+    level_1_val = high - (level_1 * diff)
+    level_2_val = high - (level_2 * diff)
+    level_3_val = high - (level_3 * diff)
+    return level_1_val, level_2_val, level_3_val
+
+# Define the Ichimoku Cloud indicator
+def ichimoku_cloud(df, high_col='High', low_col='Low', tenkan_period=9, kijun_period=26, senkou_span_period=52):
+    """Calculates the components of the Ichimoku Cloud for the given DataFrame"""
+    tenkan_sen_high = df[high_col].rolling(window=tenkan_period).max()
+    tenkan_sen_low = df[low_col].rolling(window=tenkan_period).min()
+    tenkan_sen = (tenkan_sen_high + tenkan_sen_low) / 2
+    kijun_sen_high = df[high_col].rolling(window=kijun_period).max()
+    kijun_sen_low = df[low_col].rolling(window=kijun_period).min()
+    kijun_sen = (kijun_sen_high + kijun_sen_low) / 2
+   
+# Define the function to calculate the Bollinger Bands
+def bollinger_bands(dataframe, n, n_std):
+    MA = pd.Series(dataframe['Close'].rolling(n).mean())
+    SD = pd.Series(dataframe['Close'].rolling(n).std())
+    upper_band = MA + (SD * n_std)
+    lower_band = MA - (SD * n_std)
+    return upper_band, lower_band
+
+
+# Define the function to calculate the Fibonacci retracement levels
+def fibonacci_retracement(dataframe, high, low):
+    # Calculate the highest high and lowest low in the specified time frame
+    max_high = max(dataframe[high])
+    min_low = min(dataframe[low])
+    
+    # Calculate the Fibonacci levels
+    diff = max_high - min_low
+    levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+    retracements = []
+    for level in levels:
+        retracement = max_high - (diff * level)
+        retracements.append(retracement)
+    
+    return retracements
+
+
+# Define the function to calculate the Fibonacci extension levels
+def fibonacci_extension(dataframe, high, low):
+    # Calculate the highest high and lowest low in the specified time frame
+    max_high = max(dataframe[high])
+    min_low = min(dataframe[low])
+    
+    # Calculate the Fibonacci levels
+    diff = max_high - min_low
+    levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.414, 1.618, 2.618, 4.236]
+    extensions = []
+    for level in levels:
+        extension = max_high + (diff * level)
+        extensions.append(extension)
+    
+    return extensions
+
+
+# Define the function to calculate the Fibonacci arcs
+def fibonacci_arcs(dataframe, high, low):
+    # Calculate the highest high and lowest low in the specified time frame
+    max_high = max(dataframe[high])
+    min_low = min(dataframe[low])
+    
+    # Calculate the Fibonacci levels
+    diff = max_high - min_low
+    levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786]
+    arcs = []
+    for level in levels:
+        arc = max_high - (diff * level)
+        arcs.append(arc)
+    
+    return arcs
+
+
+# Define the function to calculate the Ichimoku Cloud
+def ichimoku_cloud(dataframe, high, low):
+    # Calculate the average of the high and low over the last 26 periods
+    tenkan_sen = (pd.Series(dataframe[high]).rolling(window=9).max() +
+                  pd.Series(dataframe[low]).rolling(window=9).min()) / 2
+
+    # Calculate the average of the high and low over the last 52 periods
+    kijun_sen = (pd.Series(dataframe[high]).rolling(window=26).max() +
+                 pd.Series(dataframe[low]).rolling(window=26).min()) / 2
+
+    # Calculate the midpoint of the last 52 periods
+    senkou_span_a = ((tenkan_sen + kijun_sen) / 2).shift(26)
+
+    # Calculate the average of the high and low over the last 52 periods
+    senkou_span_b = (pd.Series(dataframe[high]).rolling(window=52).max() +
+                    
+pd.Series(dataframe[low]).rolling(window=52).min()) / 2).shift(26)# Calculate the current closing price
+current_price = pd.Series(dataframe['Close'])
+
+# Calculate the leading span A and B
+leading_span_a = ((senkou_span_a + senkou_span_b) / 2).shift(26)
+leading_span_b = ((pd.Series(dataframe[high]).rolling(window=52).max() +
+                  pd.Series(dataframe[low]).rolling(window=52).min()) / 2).shift(26)
+
+# Define a dataframe to store the results
+ichimoku_dataframe = pd.DataFrame({'Tenkan Sen': tenkan_sen,
+                                   'Kijun Sen': kijun_sen,
+                                   'Senkou Span A': senkou_span_a,
+                                   'Senkou Span B': senkou_span_b,
+                                   'Leading Span A': leading_span_a,
+                                   'Leading Span B': leading_span_b,
+                                   'Current Price': current_price})
+
+return ichimoku_dataframe
+Define the function to calculate the Parabolic SAR
+def parabolic_sar(dataframe, af_start=0.02, af_increment=0.02, af_max=0.2):
+# Define the starting values
+af = af_start
+ep = dataframe['Low'][0]
+long_positions = [0]
+short_positions = [0]# Loop through the data and calculate the SAR values
+for i in range(1, len(dataframe)):
+    # If the previous position was long, calculate the new SAR value
+    if long_positions[-1] > 0:
+        sar = long_positions[-1] + af * (ep - long_positions[-1])
+        # Check if the SAR value is lower than the current low
+        if sar > dataframe['Low'][i]:
+            sar = dataframe['Low'][i]
+        # Check if the SAR value is lower than the previous low
+        if sar > dataframe['Low'][i - 1]:
+            sar = dataframe['Low'][i - 1]
+        # Check if the SAR value is lower than the previous high
+        if sar > dataframe['High'][i - 1]:
+            sar = dataframe['High'][i - 1]
+        # Check if the SAR value is lower than the current high
+        if sar > dataframe['High'][i]:
+            sar = dataframe['High'][i]
+        # If the SAR value is lower than the current low, reverse the position
+        if sar > dataframe['Low'][i]:
+            long_positions.append(ep)
+            af = af_start
+            ep = dataframe['High'][i]
+            short_positions.append(sar)
+        else:
+            long_positions.append(sar)
+            ep = max(ep, dataframe['High'][i])
+            af = min(af + af_increment, af_max)
+    # If the previous position was short, calculate the new SAR value
+    elif short_positions[-1] > 0:
+        sar = short_positions[-1] - af * (short_positions[-1] - ep)
+        # Check if the SAR value is higher than the current high
+        if sar < dataframe['High'][i]:
+            sar = dataframe['High'][i]
+        # Check if the SAR value is higher than the previous high
+        if sar < dataframe['High'][i - 1]:
+            sar = dataframe['High'][i - 1]
+        # Check if the SAR value is higher than the previous low
+        if sar < dataframe['Low'][i - 1]:
+            sar = dataframe['Low'][i - 1]
+        # Check if the SAR
+Define the function to calculate the Relative Strength Index (RSI)
+def relative_strength_index(dataframe, n):
+delta = dataframe['Close'].diff()
+up = delta.where(delta > 0, 0)
+down = -delta.where(delta < 0, 0)
+avg_gain = up.rolling(n).mean()
+avg_loss = down.rolling(n).mean()
+rs = avg_gain / avg_loss
+rsi = 100 - (100 / (1 + rs))
+return rsi
+
+Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def moving_average_convergence_divergence(dataframe, n_fast, n_slow):
+ema_fast = dataframe['Close'].ewm(span=n_fast, min_periods=n_fast).mean()
+ema_slow = dataframe['Close'].ewm(span=n_slow, min_periods=n_slow).mean()
+macd = ema_fast - ema_slow
+signal = macd.ewm(span=9, min_periods=9).mean()
+histogram = macd - signal
+return macd, signal, histogram
+
+Define the function to calculate the Stochastic Oscillator
+def stochastic_oscillator(dataframe, n):
+high = dataframe['High'].rolling(n).max()
+low = dataframe['Low'].rolling(n).min()
+k = ((dataframe['Close'] - low) / (high - low)) * 100
+d = k.rolling(window=3).mean()
+return k, d
+
+Define the function to calculate the Average Directional Index (ADX)
+def average_directional_index(dataframe, n):
+tr = pd.DataFrame(index=dataframe.index)
+tr['high-low'] = dataframe['High'] - dataframe['Low']
+tr['high-pc'] = abs(dataframe['High'] - dataframe['Close'].shift())
+tr['low-pc'] = abs(dataframe['Low'] - dataframe['Close'].shift())
+tr['true range'] = tr.max(axis=1)
+atr = tr['true range'].rolling(n).mean()
+up = dataframe['High'] - dataframe['High'].shift()
+down = dataframe['Low'].shift() - dataframe['Low']
+plus_dm = np.where((up > down) & (up > 0), up, 0)
+minus_dm = np.where((down > up) & (down > 0), down, 0)
+plus_dm_avg = plus_dm.rolling(n).mean()
+minus_dm_avg = minus_dm.rolling(n).mean()
+plus_di = 100 * (plus_dm_avg / atr)
+minus_di = 100 * (minus_dm_avg / atr)
+dx = 100 * (abs(plus_di - minus_di) / (plus_di + minus_di))
+adx = dx.rolling(n).mean()
+return adx, plus_di, minus_di
+
+Define the function to calculate the On-balance Volume (OBV)
+def on_balance_volume(dataframe):
+close = dataframe['Close']
+volume = dataframe['Volume']
+obv = volume.where(close.diff() > 0, -volume).cumsum()
+return obv# Combine the data into a single dataframe
+ichimoku = pd.DataFrame({
+    'tenkan_sen': tenkan_sen,
+    'kijun_sen': kijun_sen,
+    'senkou_span_a': senkou_span_a,
+    'senkou_span_b': senkou_span_b,
+    'chikou_span': chikou_span
+})
+
+return ichimoku
+Define the function to calculate the Relative Strength Index (RSI)
+def rsi(dataframe, n):
+delta = dataframe['Close'].diff()
+gain = delta.where(delta > 0, 0)
+loss = -delta.where(delta < 0, 0)
+avg_gain = gain.rolling(window=n).mean()
+avg_loss = loss.rolling(window=n).mean()
+rs = avg_gain / avg_loss
+rsi = 100 - (100 / (1 + rs))
+return rsi
+
+Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def macd(dataframe, n_fast, n_slow):
+ema_fast = dataframe['Close'].ewm(span=n_fast, min_periods=n_slow).mean()
+ema_slow = dataframe['Close'].ewm(span=n_slow, min_periods=n_slow).mean()
+macd = ema_fast - ema_slow
+signal = macd.ewm(span=9, min_periods=9).mean()
+histogram = macd - signal
+return macd, signal, histogram
+
+Define the function to calculate the Stochastic Oscillator
+def stochastic_oscillator(dataframe, n):
+# Calculate the highest high and lowest low in the specified time frame
+high_max = dataframe['High'].rolling(window=n).max()
+low_min = dataframe['Low'].rolling(window=n).min()# Calculate the %K and %D lines
+k = ((dataframe['Close'] - low_min) / (high_max - low_min)) * 100
+d = k.rolling(window=3).mean()
+
+return k, d
+Define the function to plot the technical indicators
+def plot_technical_indicators(dataframe, ticker):
+# Set the style of the plot
+plt.style.use('ggplot')# Define the size of the figure
+plt.figure(figsize=(20, 15))
+
+# Plot the closing price of the stock
+plt.subplot(3, 2, 1)
+plt.plot(dataframe['Close'])
+plt.title(f'{ticker} Close Price')
+plt.xlabel('Date')
+plt.ylabel('Price')
+
+# Plot the Bollinger Bands
+plt.subplot(3, 2, 2)
+upper_band, lower_band = bollinger_bands(dataframe, 20, 2)
+plt.plot(dataframe['Close'])
+plt.plot(upper_band, color='red')
+plt.plot(lower_band, color='red')
+plt.fill_between(dataframe.index, upper_band, lower_band, color='grey', alpha=0.2)
+plt.title('Bollinger Bands')
+plt.xlabel('Date')
+plt.ylabel('Price')
+
+# Plot the Fibonacci retracement levels
+plt.subplot(3, 2, 3)
+retracements = fibonacci_retracement(dataframe, 'High', 'Low')
+plt.plot(dataframe['Close'])
+plt.hlines(retracements, xmin=dataframe.index[0], xmax=dataframe.index[-1], colors='grey', linestyles='dashed')
+plt.title('Fibonacci Retracement Levels
+Define the function to plot the technical indicators
+def plot_technical_indicators(dataframe, ticker):
+# Define the figure and axis objects
+fig, ax = plt.subplots(nrows=5, ncols=1, figsize=(15, 25))# Plot the candlestick chart
+candlestick_ohlc(ax[0], dataframe.values, width=0.6, colorup='green', colordown='red')
+ax[0].set_title(f'{ticker} Candlestick Chart')
+
+# Plot the moving averages
+ax[1].plot(dataframe['Close'], label='Close')
+ax[1].plot(dataframe['MA10'], label='MA10')
+ax[1].plot(dataframe['MA20'], label='MA20')
+ax[1].set_title('Moving Averages')
+ax[1].legend()
+
+# Plot the Bollinger Bands
+upper_band, lower_band = bollinger_bands(dataframe, 20, 2)
+ax[2].plot(dataframe['Close'], label='Close')
+ax[2].plot(upper_band, label='Upper Band')
+ax[2].plot(lower_band, label='Lower Band')
+ax[2].set_title('Bollinger Bands')
+ax[2].legend()
+
+# Plot the Fibonacci retracement levels
+retracements = fibonacci_retracement(dataframe, 'High', 'Low')
+ax[3].plot(dataframe['Close'], label='Close')
+for i, level in enumerate(retracements):
+    ax[3].axhline(level, linestyle='--', label=f'Level {i+1}')
+ax[3].set_title('Fibonacci Retracement Levels')
+ax[3].legend()
+
+# Plot the Fibonacci extension levels
+extensions = fibonacci_extension(dataframe, 'High', 'Low')
+ax[4].plot(dataframe['Close'], label='Close')
+for i, level in enumerate(extensions):
+    ax[4].axhline(level, linestyle='--', label=f'Level {i+1}')
+ax[4].set_title('Fibonacci Extension Levels')
+ax[4].legend()
+
+# Show the plot
+plt.show()
+Define the function to plot the Ichimoku Cloud
+def plot_ichimoku_cloud(dataframe, ticker):
+# Define the figure and axis objects
+fig, ax = plt.subplots(figsize=(15, 10))# Plot the candlestick chart
+candlestick_ohlc(ax, dataframe.values, width=0.6, colorup='green', colordown='red')
+ax.set_title(f'{ticker} Ichimoku Cloud')
+
+# Plot the Ichimoku Cloud
+tenkan_sen = (pd.Series(dataframe['High']).rolling(window=9).max() +
+              pd.Series(dataframe['Low']).rolling(window=9).min()) / 2
+kijun_sen = (pd.Series(dataframe['High']).rolling(window=26).max() +
+             pd.Series(dataframe['Low']).rolling(window=26).min()) / 2
+senkou_span_a = ((tenkan_sen + kijun_sen) / 2).shift(26)
+senkou_span_b = (pd.Series(dataframe['High']).rolling(window=52).max() +
+                 pd.Series(dataframe['Low']).rolling(window=52).min()) / 2
+ax.fill_between(senkou_span_a.index, senkou_span_a.values, senkou_span_b.values,
+pd.Series(dataframe[low]).rolling(window=52).min()) / 2).shift(26)# Calculate the Chikou Span, which is the closing price shifted back 26 periods
+chikou_span = pd.Series(dataframe['Close']).shift(-26)
+
+return tenkan_sen, kijun_sen, senkou_span_a, senkou_span_b, chikou_span
+Define the function to calculate the Chande Momentum Oscillator (CMO)
+def chande_momentum_oscillator(dataframe, n):
+# Calculate the difference between the current close price and the close price n periods ago
+diff = dataframe['Close'] - dataframe['Close'].shift(n)# Calculate the absolute difference between the current close price and the close price n periods ago
+abs_diff = abs(diff)
+
+# Calculate the sum of the differences and absolute differences over the last n periods
+sum_diff = diff.rolling(n).sum()
+sum_abs_diff = abs_diff.rolling(n).sum()
+
+# Calculate the Chande Momentum Oscillator
+cmo = ((sum_diff - sum_abs_diff) / (sum_diff + sum_abs_diff)) * 100
+
+return cmo
+Define the function to calculate the Relative Volatility Index (RVI)
+def relative_volatility_index(dataframe, n):
+# Calculate the difference between the current high and low prices
+diff = dataframe['High'] - dataframe['Low']# Calculate the absolute difference between the current high and low prices
+abs_diff = abs(diff)
+
+# Calculate the sum of the differences and absolute differences over the last n periods
+sum_diff = diff.rolling(n).sum()
+sum_abs_diff = abs_diff.rolling(n).sum()
+
+# Calculate the Relative Volatility Index
+rvi = pd.Series(sum_diff / sum_abs_diff)
+
+return rvi
+Define the function to calculate the Money Flow Index (MFI)
+def money_flow_index(dataframe, n):
+# Calculate the typical price for each period
+typical_price = (dataframe['High'] + dataframe['Low'] + dataframe['Close']) / 3# Calculate the raw money flow for each period
+raw_money_flow = typical_price * dataframe['Volume']
+
+# Calculate the positive and negative money flow over the last n periods
+positive_money_flow = []
+negative_money_flow = []
+for i in range(len(dataframe)):
+    if i == 0:
+        positive_money_flow.append(0)
+        negative_money_flow.append(0)
+    else:
+        if typical_price[i] > typical_price[i-1]:
+            positive_money_flow.append(raw_money_flow[i])
+            negative_money_flow.append(0)
+        elif typical_price[i] < typical_price[i-1]:
+            positive_money_flow.append(0)
+            negative_money_flow.append(raw_money_flow[i])
+        else:
+            positive_money_flow.append(0)
+            negative_money_flow.append(0)
+positive_money_flow = pd.Series(positive_money_flow)
+negative_money_flow = pd.Series(negative_money_flow)
+
+# Calculate the money flow ratio
+money_flow_ratio = positive_money_flow.rolling(n).sum() / negative_money_flow.rolling(n).sum()
+
+# Calculate the Money Flow Index
+mfi = 100 - (100 / (1 + money_flow_ratio))
+
+return mfi
+Define the function to calculate the Williams %R
+def williams_r(dataframe, high, low, close, n):
+# Calculate the highest high and lowest low over the last n periods
+highest_high = pd.Series(dataframe[high]).rolling(window=n).max()
+lowest_low = pd.Series(dataframe[low]).rolling(window=n).min()# Calculate the Williams %R
+williams_r = ((highest_high - pd.Series(dataframe[close])) / (highest_high - lowest_low)) * -100
+
+return williams_r
+Define the function to calculate the Commodity Channel Index (CCI)
+def commodity_channel_index(dataframe, high, low, close, n):
+# Calculate thepd.Series(dataframe[low]).rolling(window=52).min()) / 2).shift(26)
+
+Calculate the most recent closing price
+current_close = dataframe['Close'][-1]
+
+Define the buy and sell signals based on the position of the price relative to the cloud
+buy_signal = current_close > senkou_span_a[-1] and current_close > senkou_span_b[-1]
+sell_signal = current_close < senkou_span_a[-1] and current_close < senkou_span_b[-1]
+
+return tenkan_sen, kijun_sen, senkou_span_a, senkou_span_b, buy_signal, sell_signal
+
+Define the function to calculate the On-Balance Volume
+def on_balance_volume(dataframe, close, volume):
+# Calculate the daily change in the closing price
+daily_change = dataframe[close].diff()# Create a new column for the direction of the daily change
+direction = daily_change.apply(lambda x: 1 if x > 0 else -1 if x < 0 else 0)
+
+# Calculate the volume based on the direction of the daily change
+volume_direction = dataframe[volume] * direction
+
+# Calculate the On-Balance Volume
+obv = volume_direction.cumsum()
+
+return obv
+Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def macd(dataframe, close):
+# Calculate the 12-day EMA and 26-day EMA
+ema12 = pd.Series(dataframe[close]).ewm(span=12, min_periods=12).mean()
+ema26 = pd.Series(dataframe[close]).ewm(span=26, min_periods=26).mean()# Calculate the MACD line
+macd_line = ema12 - ema26
+
+# Calculate the 9-day EMA of the MACD line
+signal_line = macd_line.ewm(span=9, min_periods=9).mean()
+
+# Calculate the MACD histogram
+macd_histogram = macd_line - signal_line
+
+return macd_line, signal_line, macd_histogram
+Define the function to calculate the Relative Strength Index (RSI)
+def rsi(dataframe, close, n):
+# Calculate the daily change in the closing price
+delta = dataframe[close].diff()# Create a new column for the direction of the daily change
+direction = delta.apply(lambda x: 1 if x > 0 else 0 if x == 0 else -1)
+
+# Calculate the positive and negative gains over the last n periods
+gains = delta.where(direction == 1, 0)
+losses = abs(delta.where(direction == -1, 0))
+
+# Calculate the average gains and losses over the last n periods
+avg_gains = gains.rolling(window=n).mean()
+avg_losses = losses.rolling(window=n).mean()
+
+# Calculate the relative strength (RS) and the RSI
+rs = avg_gains / avg_losses
+rsi = 100 - (100 / (1 + rs))
+
+return rsi
+Define the function to calculate the Stochastic Oscillator
+def stochastic_oscillator(dataframe, high, low, close, n, k):
+# Calculate the lowest low and highest high over the last n periods
+lowest_low = pd.Series(dataframe[low]).rolling(window=n).min()
+highest_high = pd.Series(dataframe[high]).rolling(window=n).max()# Calculate the %K and %D lines
+k_line =
+Define the function to calculate the Average Directional Index (ADX)
+def ADX(dataframe, high, low, close, n):
+# Calculate the true range
+tr = pd.DataFrame()
+tr['tr1'] = abs(dataframe[high] - dataframe[low])
+tr['tr2'] = abs(dataframe[high] - dataframe[close].shift())
+tr['tr3'] = abs(dataframe[low] - dataframe[close].shift())
+tr['true_range'] = tr.max(axis=1)# Calculate the directional movement
+dm_pos = pd.Series(dataframe[high] - dataframe[high].shift(), name='dm_pos')
+dm_neg = pd.Series(dataframe[low].shift() - dataframe[low], name='dm_neg')
+
+# Calculate the smoothed directional movement
+smooth_dm_pos = dm_pos.ewm(alpha=1/n, min_periods=n).mean()
+smooth_dm_neg = dm_neg.ewm(alpha=1/n, min_periods=n).mean()
+
+# Calculate the directional index
+di_pos = 100 * (smooth_dm_pos / tr['true_range'])
+di_neg = 100 * (smooth_dm_neg / tr['true_range'])
+
+# Calculate the average directional index
+dx = 100 * (abs(di_pos - di_neg) / (di_pos + di_neg)).ewm(alpha=1/n, min_periods=n).mean()
+adx = dx.ewm(alpha=1/n, min_periods=n).mean()
+
+return adx
+Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def MACD(dataframe, n_fast, n_slow, n_signal):
+ema_fast = dataframe['Close'].ewm(span=n_fast, min_periods=n_slow).mean()
+ema_slow = dataframe['Close'].ewm(span=n_slow, min_periods=n_slow).mean()
+macd = ema_fast - ema_slow
+signal = macd.ewm(span=n_signal, min_periods=n_signal).mean()
+histogram = macd - signal
+return macd, signal, histogram
+
+Define the function to calculate the Relative Strength Index (RSI)
+def RSI(dataframe, n):
+delta = dataframe['Close'].diff()
+gain = delta.where(delta > 0, 0)
+loss = -delta.where(delta < 0, 0)
+avg_gain = gain.rolling(window=n).mean()
+avg_loss = loss.rolling(window=n).mean()
+rs = avg_gain / avg_loss
+rsi = 100 - (100 / (1 + rs))
+return rsi
+
+Define the function to calculate the Stochastic Oscillator
+def stochastic_oscillator(dataframe, high, low, close, n):
+lowest_low = dataframe[low].rolling(window=n).min()
+highest_high = dataframe[high].rolling(window=n).max()
+k = 100 * ((dataframe[close] - lowest_low) / (highest_high - lowest_low))
+return k
+
+Define the function to calculate the Williams %R
+def williams_r(dataframe, high, low, close, n):
+lowest_low = dataframe[low].rolling(window=n).min()
+highest_high = dataframe[high].rolling(window=n).max()
+r = -100 * ((highest_high - dataframe[close]) / (highest_high - lowest_low))
+return r
+
+Define the function to calculate the On-Balance Volume (OBV)
+def OBV(dataframe, close, volume):
+direction = np.where(dataframe[close].diff() > 0, 1    # Define the function to plot the Ichimoku Cloud
+    def plot_ichimoku_cloud(dataframe, high, low):
+        fig, ax = plt.subplots(figsize=(20, 10))
+
+        # Plot the closing price
+        ax.plot(dataframe['Close'], color='black', label='Closing Price')
+
+        # Plot the Tenkan-sen line
+        ax.plot(tenkan_sen, color='blue', label='Tenkan-sen')
+
+        # Plot the Kijun-sen line
+        ax.plot(kijun_sen, color='red', label='Kijun-sen')
+
+        # Plot the Senkou Span A line
+        ax.plot(senkou_span_a, color='green', label='Senkou Span A')
+
+        # Plot the Senkou Span B line
+        ax.plot(senkou_span_b, color='orange', label='Senkou Span B')
+
+        # Fill the area between Senkou Span A and Senkou Span B
+        ax.fill_between(senkou_span_a.index, senkou_span_a, senkou_span_b,
+                        where=senkou_span_a >= senkou_span_b, interpolate=True, color='green')
+        ax.fill_between(senkou_span_a.index, senkou_span_a, senkou_span_b,
+                        where=senkou_span_a < senkou_span_b, interpolate=True, color='red')
+
+        # Set the axis labels and title
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Price')
+        ax.set_title('Ichimoku Cloud')
+
+        # Add the legend and grid
+        ax.legend()
+        ax.grid()
+
+    # Plot the Ichimoku Cloud
+    plot_ichimoku_cloud(dataframe, high, low)
+import pandas as pd
+import yfinance as yf
+
+# Download historical price data for a stock
+data = yf.download('AAPL', start='2020-01-01', end='2022-03-01')
+
+# Plot the Ichimoku Cloud
+ichimoku_cloud(data, 'High', 'Low')
+# Define the function to calculate the Average Directional Index (ADX)
+def average_directional_index(dataframe, high, low, close, n):
+    # Calculate the True Range (TR)
+    tr1 = pd.Series(dataframe[high] - dataframe[low])
+    tr2 = pd.Series(abs(dataframe[high] - dataframe[close].shift()))
+    tr3 = pd.Series(abs(dataframe[low] - dataframe[close].shift()))
+    tr = pd.Series([max(x) for x in zip(tr1, tr2, tr3)])
+    
+    # Calculate the Directional Movement (DM) and True Range (TR) over the last n periods
+    up_dm = pd.Series(dataframe[high].diff(1))
+    up_dm[up_dm < 0] = 0
+    down_dm = pd.Series(dataframe[low].diff(1))
+    down_dm[down_dm > 0] = 0
+    down_dm = abs(down_dm)
+    up_dm[up_dm <= down_dm] = 0
+    down_dm[down_dm <= up_dm] = 0
+    up_dm = up_dm.rolling(n).mean()
+    down_dm = down_dm.rolling(n).mean()
+    tr = tr.rolling(n).mean()
+    
+    # Calculate the Positive Directional Index (+DI) and Negative Directional Index (-DI)
+    plus_di = 100 * (up_dm / tr)
+    minus_di = 100 * (down_dm / tr)
+    
+    # Calculate the Directional Movement Index (DX)
+    dx = 100 * (abs(plus_di - minus_di) / (plus_di + minus_di))
+    
+    # Calculate the Average Directional Index (ADX)
+    adx = dx.rolling(n).mean()
+    
+    return adx
+# Define the function to calculate the Moving Average Convergence Divergence (MACD) indicator
+def moving_average_convergence_divergence(dataframe, close, n_fast=12, n_slow=26, n_signal=9):
+    # Calculate the Fast Exponential Moving Average (EMA)
+    ema_fast = dataframe[close].ewm(span=n_fast, min_periods=n_fast).mean()
+    
+    # Calculate the Slow Exponential Moving Average (EMA)
+    ema_slow = dataframe[close].ewm(span=n_slow, min_periods=n_slow).mean()
+    
+    # Calculate the MACD Line
+    macd_line = ema_fast - ema_slow
+    
+    # Calculate the Signal Line
+    signal_line = macd_line.ewm(span=n_signal, min_periods=n_signal).mean()
+    
+    # Calculate the MACD Histogram
+    macd_histogram = macd_line - signal_line
+    
+    return macd_line, signal_line, macd_histogram
+# Define the function to backtest the strategy
+def backtest(dataframe, high, low, close, n):
+    # Calculate the ADX
+    adx = average_directional_index(dataframe, high, low, close, n)
+    
+    # Buy when the ADX is above a certain threshold
+    buy_signal = (adx > 25) & (adx.shift() < 25)
+    
+    # Sell when the ADX falls below a certain threshold
+    sell_signal = (adx < 20) & (adx.shift() > 20)
+    
+    # Combine the buy and sell signals into a single column
+    signals = pd.concat([buy_signal, sell_signal], axis=1)
+    signals.columns = ['Buy', 'Sell']
+    
+    # Initialize the position to 0
+    position = 0
+    
+    # Create an empty list to store the daily returns
+    returns = []
+    
+    # Loop through the signals
+    for i in range(len(signals)):
+        # If there is a buy signal and we are not already long, buy
+        if signals['Buy'][i] and position == 0:
+            position = 1
+            buy_price = close[i]
+        
+        # If there is a sell signal and we are long, sell
+        elif signals['Sell'][i] and position == 1:
+            position = 0
+            sell_price = close[i]
+            returns.append((sell_price - buy_price) / buy_price)
+    
+    # Convert the returns list to a Series and calculate the cumulative returns
+    returns = pd.Series(returns)
+    cumulative_returns = (1 + returns).cumprod()
+    
+    # Plot the cumulative returns
+    cumulative_returns.plot()
+    plt.title('Cumulative Returns')
+    plt.xlabel('Period')
+    plt.ylabel('Returns')
+    plt.show()
+    
+    # Print the final return
+    print('Final return:', returns.sum())
+backtest(dataframe, 'High', 'Low', 'Close', 14)
+# Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def moving_average_convergence_divergence(dataframe, close, n_fast, n_slow):
+    # Calculate the fast and slow exponential moving averages
+    ema_fast = dataframe[close].ewm(span=n_fast, min_periods=n_fast).mean()
+    ema_slow = dataframe[close].ewm(span=n_slow, min_periods=n_slow).mean()
+    
+    # Calculate the Moving Average Convergence Divergence (MACD) line
+    macd_line = ema_fast - ema_slow
+    
+    # Calculate the signal line
+    signal_line = macd_line.ewm(span=9, min_periods=9).mean()
+    
+    # Calculate the MACD histogram
+    macd_histogram = macd_line - signal_line
+    
+    return macd_line, signal_line, macd_histogram
+# Define the function to calculate the Moving Average Convergence Divergence (MACD)
+def moving_average_convergence_divergence(dataframe, close, n_fast, n_slow):
+    # Calculate the Exponential Moving Average (EMA) of the closing price over the last n_fast and n_slow periods
+    ema_fast = close.ewm(span=n_fast, min_periods=n_fast).mean()
+    ema_slow = close.ewm(span=n_slow, min_periods=n_slow).mean()
+    
+    # Calculate the MACD Line
+    macd_line = ema_fast - ema_slow
+    
+    # Calculate the Signal Line, which is the EMA of the MACD Line over the last 9 periods
+    signal_line = macd_line.ewm(span=9, min_periods=9).mean()
+    
+    # Calculate the MACD Histogram, which is the difference between the MACD Line and the Signal Line
+    macd_histogram = macd_line - signal_line
+    
+    return macd_histogram 
+# Define the function to calculate the Average Directional Index (ADX)
+def average_directional_index(dataframe, high, low, close, n):
+    # Calculate the True Range (TR)
+    tr1 = pd.Series(dataframe[high] - dataframe[low])
+    tr2 = pd.Series(abs(dataframe[high] - dataframe[close].shift()))
+    tr3 = pd.Series(abs(dataframe[low] - dataframe[close].shift()))
+    tr = pd.Series([max(x) for x in zip(tr1, tr2, tr3)])
+    
+    # Calculate the Directional Movement (DM) and True Range (TR) over the last n periods
+    up_dm = pd.Series(dataframe[high].diff(1))
+    up_dm[up_dm < 0] = 0
+    down_dm = pd.Series(dataframe[low].diff(1))
+    down_dm[down_dm > 0] = 0
+    down_dm = abs(down_dm)
+    up_dm[up_dm <= down_dm] = 0
+    down_dm[down_dm <= up_dm] = 0
+    up_dm = up_dm.rolling(n).mean()
+    down_dm = down_dm.rolling(n).mean()
+    tr = tr.rolling(n).mean()
+    
+    # Calculate the Positive Directional Index (+DI) and Negative Directional Index (-DI)
+    plus_di = 100 * (up_dm / tr)
+    minus_di = 100 * (down_dm / tr)
+    
+    # Calculate the Directional Movement Index (DX)
+    dx = 100 * (abs(plus_di - minus_di) / (plus_di + minus_di))
+    
+    # Calculate the Average Directional Index (ADX)
+    adx = dx.rolling(n).mean()
+    
+    return adx
+# Plot the ADX
+fig, ax = plt.subplots(figsize=(16,9))
+
+ax.plot(data['Date'], data['Close'], label='Closing Price')
+ax.legend(loc='upper left')
+
+ax2 = ax.twinx()
+ax2.plot(data['Date'], adx, label='ADX', color='purple')
+ax2.axhline(y=25, linestyle='--', color='gray', alpha=0.5)
+ax2.legend(loc='upper right')
+
+ax.set_xlabel('Date')
+ax.set_ylabel('Price ($)')
+ax2.set_ylabel('ADX')
+ax.set_title('Closing Price and Average Directional Index (ADX)')
+
+plt.show()
+import pandas as pd
+import yfinance as yf
+
+# Define the function to calculate the Average Directional Index (ADX)
+def average_directional_index(dataframe, high, low, close, n):
+    tr1 = pd.Series(dataframe[high] - dataframe[low])
+    tr2 = pd.Series(abs(dataframe[high] - dataframe[close].shift()))
+    tr3 = pd.Series(abs(dataframe[low] - dataframe[close].shift()))
+    tr = pd.Series([max(x) for x in zip(tr1, tr2, tr3)])
+    up_dm = pd.Series(dataframe[high].diff(1))
+    up_dm[up_dm < 0] = 0
+    down_dm = pd.Series(dataframe[low].diff(1))
+    down_dm[down_dm > 0] = 0
+    down_dm = abs(down_dm)
+    up_dm[up_dm <= down_dm] = 0
+    down_dm[down_dm <= up_dm] = 0
+    up_dm = up_dm.rolling(n).mean()
+    down_dm = down_dm.rolling(n).mean()
+    tr = tr.rolling(n).mean()
+    plus_di = 100 * (up_dm / tr)
+    minus_di = 100 * (down_dm / tr)
+    dx = 100 * (abs(plus_di - minus_di) / (plus_di + minus_di))
+    adx = dx.rolling(n).mean()
+    return adx
+
+# Define the function to calculate the Moving Average Crossover (MAC)
+def moving_average_crossover(dataframe, short_ma, long_ma):
+    short_ma = dataframe.rolling(window=short_ma).mean()
+    long_ma = dataframe.rolling(window=long_ma).mean()
+    return short_ma, long_ma
+
+# Define the function to check for buy and sell signals
+def check_signals(dataframe, ticker):
+    adx = average_directional_index(dataframe, 'High', 'Low', 'Close', 14)
+    short_ma, long_ma = moving_average_crossover(dataframe['Close'], 50, 200)
+    buy_signals = []
+    sell_signals = []
+    for i in range(len(dataframe)):
+        if adx[i] > 25 and short_ma[i] > long_ma[i]:
+            buy_signals.append(i)
+        elif adx[i] > 25 and short_ma[i] < long_ma[i]:
+            sell_signals.append(i)
+    return buy_signals, sell_signals
+
+# Define the main function to backtest the trading strategy
+def backtest(dataframe, ticker):
+    buy_signals, sell_signals = check_signals(dataframe, ticker)
+    trades = []
+    for i in range(len(buy_signals)):
+        buy_date = dataframe.index[buy_signals[i]]
+        for j in range(len(sell_signals)):
+            if sell_signals[j] > buy_signals[i]:
+                sell_date = dataframe.index[sell_signals[j]]
+                shares_bought = 1
+                buy_price = dataframe.loc[buy_date, 'Close']
+                sell_price = dataframe.loc[sell_date, 'Close']
+                trade_profit = (sell_price - buy_price) * shares_bought
+                trades.append([buy_date, sell_date, buy_price, sell_price, trade_profit])
+                break
+    trades_df = pd.DataFrame(trades, columns=['Buy Date', 'Sell Date', 'Buy Price', 'Sell Price', 'Trade Profit'])
+    total_profit = trades_df['Trade Profit'].sum()
+    return trades_df, total_profit
+
+# Example usage
+ticker = 'AAP
+# Set the initial capital
+initial_capital = float(100000.0)
+
+# Create a DataFrame to store the trading strategy information
+positions = pd.DataFrame(index=dataframe.index).fillna(0.0)
+
+# Buy when the +DI crosses above the -DI and the ADX is above a certain threshold
+positions[(dataframe['plus_di'] > dataframe['minus_di']) & (dataframe['adx'] > adx_threshold)] = 1
+
+# Sell when the -DI crosses above the +DI and the ADX is above a certain threshold
+positions[(dataframe['plus_di'] < dataframe['minus_di']) & (dataframe['adx'] > adx_threshold)] = -1
+
+# Calculate the daily market return
+market_return = dataframe['Close'].pct_change()
+
+# Calculate the strategy return
+positions['market_return'] = market_return
+positions['strategy_return'] = positions['market_return'] * positions['positions'].shift(1)
+
+# Calculate the cumulative returns
+cumulative_market_return = (1 + market_return).cumprod()
+cumulative_strategy_return = (1 + positions['strategy_return']).cumprod()
+
+# Calculate the portfolio value
+positions['portfolio_value'] = initial_capital * (1 + positions['strategy_return']).cumprod()
+
+# Plot the cumulative returns
+plt.figure(figsize=(10,5))
+plt.plot(cumulative_market_return, label='Market Return')
+plt.plot(cumulative_strategy_return, label='Strategy Return')
+plt.title('Cumulative Returns')
+plt.legend(loc='upper left')
+plt.show()
+# Set the buy/sell signals based on the strategy conditions
+buy_signal = (rsi_14 < 30) & (adx_14 > 25)
+sell_signal = (rsi_14 > 70) & (adx_14 > 25)
+
+# Initialize the positions and PnL lists
+positions = []
+pnls = []
+
+# Loop through the DataFrame
+for i in range(len(df)):
+    # If it's the first day, skip the iteration
+    if i == 0:
+        positions.append(0)
+        pnls.append(0)
+        continue
+        
+    # If it's a buy signal, enter a long position
+    if buy_signal[i]:
+        positions.append(1)
+        pnls.append(df['Close'][i] - df['Close'][i-1])
+        
+    # If it's a sell signal, exit the long position
+    elif sell_signal[i]:
+        positions.append(0)
+        pnls.append(df['Close'][i-1] - df['Close'][i])
+        
+    # If there's no signal, hold the previous position
+    else:
+        positions.append(positions[-1])
+        pnls.append(0)
+
+# Add the positions and PnLs to the DataFrame
+df['Position'] = positions
+df['PnL'] = pnls
+# Define the function to calculate the Relative Strength Index (RSI)
+def relative_strength_index(dataframe, close, n):
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    avg_gain = gain.rolling(n).mean()
+    avg_loss = loss.rolling(n).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+# Generate the trading signals
+signals = generate_signals(data, 14, 30)
+
+# Execute the trades based on the signals
+trades = execute_trades(data, signals, 10000, 10)
+
+# Print the last few rows of the trades dataframe
+print(trades.tail())
+# Define the function to execute a buy order
+def buy(stock, amount):
+    print("Buying {} shares of {} at market price".format(amount, stock))
+
+# Define the function to execute a sell order
+def sell(stock, amount):
+    print("Selling {} shares of {} at market price".format(amount, stock))
+
+# Define the function to execute the trading strategy
+def execute_strategy(dataframe, stock, cash):
+    # Define the parameters for the strategy
+    short_window = 50
+    long_window = 200
+    
+    # Calculate the 50-day and 200-day Simple Moving Averages (SMA)
+    dataframe['SMA50'] = dataframe['Close'].rolling(window=short_window).mean()
+    dataframe['SMA200'] = dataframe['Close'].rolling(window=long_window).mean()
+
+    # Calculate the Average Directional Index (ADX)
+    adx = average_directional_index(dataframe, 'High', 'Low', 'Close', 14)
+    
+    # Define the conditions for a buy signal
+    buy_signal = (dataframe['SMA50'] > dataframe['SMA200']) & (adx > 25)
+    
+    # Define the conditions for a sell signal
+    sell_signal = (dataframe['SMA50'] < dataframe['SMA200']) & (adx < 20)
+
+    # Initialize the position to zero
+    position = 0
+    
+    # Execute the trading strategy
+    for i in range(len(dataframe)):
+        if buy_signal[i]:
+            # Buy the stock
+            buy(stock, cash / dataframe['Close'][i])
+            position += cash / dataframe['Close'][i]
+            cash = 0
+        elif sell_signal[i]:
+            # Sell the stock
+            sell(stock, position)
+            cash += position * dataframe['Close'][i]
+            position = 0
+    return cash + position * dataframe['Close'][i]
+# Define a function to place a buy order
+def place_buy_order(symbol, qty):
+    order = api.submit_order(
+        symbol=symbol,
+        qty=qty,
+        side='buy',
+        type='market',
+        time_in_force='gtc'
+    )
+    return order
+
+
+# Define a function to place a sell order
+def place_sell_order(symbol, qty):
+    order = api.submit_order(
+        symbol=symbol,
+        qty=qty,
+        side='sell',
+        type='market',
+        time_in_force='gtc'
+    )
+    return order
+
+
+# Define a function to check if a buy order was filled
+def check_buy_order_filled(order_id):
+    order = api.get_order_by_id(order_id)
+    if order.filled_qty == order.qty:
+        return True
+    else:
+        return False
+
+
+# Define a function to check if a sell order was filled
+def check_sell_order_filled(order_id):
+    order = api.get_order_by_id(order_id)
+    if order.filled_qty == order.qty:
+        return True
+    else:
+        return False
+
+
+# Define a function to cancel an order
+def cancel_order(order_id):
+    api.cancel_order(order_id)
+# Set the initial capital
+initial_capital = float(1000000.0)
+
+# Create a new data frame with just the 'Close' column
+data = pd.DataFrame(data=historical_data['Close'])
+
+# Define the short and long moving averages
+short_ma = 20
+long_ma = 50
+
+# Add the short and long moving averages to the data frame
+data['Short_MA'] = data['Close'].rolling(window=short_ma).mean()
+data['Long_MA'] = data['Close'].rolling(window=long_ma).mean()
+
+# Create a new column to hold the position
+data['Position'] = None
+
+# Fill in the position column based on the moving average crossover strategy
+for i in range(len(data)):
+    if data['Short_MA'][i] > data['Long_MA'][i]:
+        data['Position'][i] = 1
+    elif data['Short_MA'][i] < data['Long_MA'][i]:
+        data['Position'][i] = -1
+
+# Forward fill the position column to simulate holding the position
+data['Position'].fillna(method='ffill', inplace=True)
+
+# Calculate the daily returns
+data['Returns'] = data['Close'].pct_change()
+data['StrategyReturns'] = data['Position'].shift(1) * data['Returns']
+
+# Calculate the cumulative returns
+data['CumulativeReturns'] = (initial_capital * (1 + data['Returns']).cumprod())
+data['StrategyCumulativeReturns'] = (initial_capital * (1 + data['StrategyReturns']).cumprod())
+
+# Plot the results
+plt.figure(figsize=(15,10))
+plt.plot(data['CumulativeReturns'], label='Buy and Hold')
+plt.plot(data['StrategyCumulativeReturns'], label='Moving Average Crossover')
+plt.legend(loc='upper left')
+plt.xlabel('Date')
+plt.ylabel('Cumulative Returns')
+plt.show()
+# Define the function to calculate the Relative Strength Index (RSI)
+def relative_strength_index(dataframe, close, n):
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    avg_gain = gain.rolling(n).mean()
+    avg_loss = loss.rolling(n).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+# Calculate the technical indicators
+df['sma'] = simple_moving_average(df, 'close', 20)
+df['ema'] = exponential_moving_average(df, 'close', 20)
+df['macd'], df['signal'], df['histogram'] = moving_average_convergence_divergence(df, 'close', 12, 26, 9)
+df['bb_upper'], df['bb_middle'], df['bb_lower'] = bollinger_bands(df, 'close', 20, 2)
+df['rsi'] = relative_strength_index(df, df['close'], 14)
+df['adx'] = average_directional_index(df, 'high', 'low', 'close', 14)
+
+# Define the trading strategy
+def trading_strategy(dataframe):
+    buy_signals = []
+    sell_signals = []
+    flag = 0
+    
+    for i in range(len(dataframe)):
+        # Check for buy signals
+        if dataframe['ema'][i] > dataframe['sma'][i] and flag != 1:
+            buy_signals.append(dataframe['close'][i])
+            sell_signals.append(np.nan)
+            flag = 1
+        # Check for sell signals
+        elif dataframe['ema'][i] < dataframe['sma'][i] and flag != -1:
+            buy_signals.append(np.nan)
+            sell_signals.append(dataframe['close'][i])
+            flag = -1
+        # Do nothing if there are no signals
+        else:
+            buy_signals.append(np.nan)
+            sell_signals.append(np.nan)
+    
+    return (buy_signals, sell_signals)
+
+# Add the trading signals to the dataframe
+df['buy'], df['sell'] = trading_strategy(df)
+
+# Visualize the trading signals and the technical indicators
+plt.figure(figsize=(16,8))
+plt.plot(df['close'], label='Close Price', alpha=0.5)
+plt.plot(df['sma'], label='SMA', alpha=0.5)
+plt.plot(df['ema'], label='EMA', alpha=0.5)
+plt.scatter(df.index, df['buy'], label='Buy Signal', marker='^', color='green')
+plt.scatter(df.index, df['sell'], label='Sell Signal', marker='v', color='red')
+plt.legend()
+plt.show()
+# Define the function to backtest the trading strategy
+def backtest_strategy(dataframe, fast_period, slow_period):
+    # Calculate the moving averages
+    dataframe['fast_ma'] = dataframe['Close'].rolling(window=fast_period).mean()
+    dataframe['slow_ma'] = dataframe['Close'].rolling(window=slow_period).mean()
+
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+    # Take the difference of the signals to generate actual trading orders
+    dataframe['positions'] = dataframe['signal'].diff()
+
+    # Set the initial position to 0 (i.e. flat)
+    dataframe['positions'][0] = 0.0
+
+    # Backtest the trading strategy
+    initial_capital = float(1000)
+    positions = pd.DataFrame(index=dataframe.index).fillna(0.0)
+    positions['BTC-USD'] = 100 * dataframe['signal']   # Buy 100 BTC-USD for each buy signal
+    portfolio = positions.multiply(dataframe['Adj Close'], axis=0)
+    pos_diff = positions.diff()
+    portfolio['holdings'] = (positions.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1)
+    portfolio['cash'] = initial_capital - (pos_diff.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1).cumsum()
+    portfolio['total'] = portfolio['cash'] + portfolio['holdings']
+    portfolio['returns'] = portfolio['total'].pct_change()
+    return portfolio
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import matplotlib.pyplot as plt
+
+# Define the function to calculate the Average Directional Index (ADX)
+def average_directional_index(dataframe, high, low, close, n):
+    tr1 = pd.Series(dataframe[high] - dataframe[low])
+    tr2 = pd.Series(abs(dataframe[high] - dataframe[close].shift()))
+    tr3 = pd.Series(abs(dataframe[low] - dataframe[close].shift()))
+    tr = pd.Series([max(x) for x in zip(tr1, tr2, tr3)])
+    up_dm = pd.Series(dataframe[high].diff(1))
+    up_dm[up_dm < 0] = 0
+    down_dm = pd.Series(dataframe[low].diff(1))
+    down_dm[down_dm > 0] = 0
+    down_dm = abs(down_dm)
+    up_dm[up_dm <= down_dm] = 0
+    down_dm[down_dm <= up_dm] = 0
+    up_dm = up_dm.rolling(n).mean()
+    down_dm = down_dm.rolling(n).mean()
+    tr = tr.rolling(n).mean()
+    plus_di = 100 * (up_dm / tr)
+    minus_di = 100 * (down_dm / tr)
+    dx = 100 * (abs(plus_di - minus_di) / (plus_di + minus_di))
+    adx = dx.rolling(n).mean()
+    return adx
+
+# Define the function to backtest the trading strategy
+def backtest_strategy(dataframe, fast_period, slow_period):
+    dataframe['fast_ma'] = dataframe['Close'].rolling(window=fast_period).mean()
+    dataframe['slow_ma'] = dataframe['Close'].rolling(window=slow_period).mean()
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+    dataframe['positions'] = dataframe['signal'].diff()
+    dataframe['positions'][0] = 0.0
+    initial_capital = float(1000)
+    positions = pd.DataFrame(index=dataframe.index).fillna(0.0)
+    positions['BTC-USD'] = 100 * dataframe['signal']
+    portfolio = positions.multiply(dataframe['Adj Close'], axis=0)
+    pos_diff = positions.diff()
+    portfolio['holdings'] = (positions.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1)
+    portfolio['cash'] = initial_capital - (pos_diff.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1).cumsum()
+    portfolio['total'] = portfolio['cash'] + portfolio['holdings']
+    portfolio['returns'] = portfolio['total'].pct_change()
+    return portfolio
+
+# Define the function to generate trading signals based on ADX
+def generate_signals(dataframe, fast_period, slow_period, adx_period):
+    # Calculate the ADX
+    dataframe['adx'] = average_directional_index(dataframe, 'High', 'Low', 'Close', adx_period)
+
+    # Calculate the moving averages
+    dataframe['fast_ma'] = dataframe['Close'].rolling(window=fast_period).mean()
+    dataframe['slow_ma'] = dataframe['Close'].rolling(window=slow_period).mean()
+
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where((dataframe
+# Define the function to run the trading bot
+def run_trading_bot():
+    # Define the variables
+    fast_period = 50
+    slow_period = 200
+    n = 14
+
+    # Load the data
+    dataframe = load_data('BTC-USD', '2018-01-01', '2022-01-01')
+
+    # Calculate the ADX
+    dataframe['adx'] = average_directional_index(dataframe, 'High', 'Low', 'Close', n)
+
+    # Backtest the trading strategy
+    portfolio = backtest_strategy(dataframe, fast_period, slow_period)
+
+    # Plot the results
+    plt.figure(figsize=(16,8))
+    plt.plot(portfolio['total'])
+    plt.xlabel('Date')
+    plt.ylabel('Portfolio Value (USD)')
+    plt.title('Portfolio Value over Time')
+    plt.show()
+
+# Run the trading bot
+run_trading_bot()
+# Run the backtest
+portfolio = backtest_strategy(data, 20, 50)
+
+# Print the final portfolio value
+print('Final Portfolio Value: ${:.2f}'.format(portfolio['total'].iloc[-1]))
+
+# Visualize the portfolio value
+plt.figure(figsize=(10, 8))
+plt.plot(portfolio['total'])
+plt.title('Portfolio Value')
+plt.xlabel('Date')
+plt.ylabel('Value ($)')
+plt.show()
+# Backtest the trading strategy using the ADX indicator
+portfolio_adx = backtest_strategy(df, 10, 30)
+
+# Plot the portfolio value over time
+portfolio_adx['total'].plot(figsize=(10,6))
+plt.title('Total Portfolio Value with ADX Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Value (USD)')
+plt.show()
+# Backtest the trading strategy using the ADX indicator
+portfolio_adx = backtest_strategy(df, 10, 30)
+
+# Plot the portfolio value over time
+portfolio_adx['total'].plot(figsize=(10,6))
+plt.title('Total Portfolio Value with ADX Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Value (USD)')
+plt.show()
+# Calculate the Sharpe ratio
+sharpe_ratio = (portfolio_adx['returns'].mean() / portfolio_adx['returns'].std()) * np.sqrt(252)
+
+# Print the Sharpe ratio
+print('Sharpe ratio:', sharpe_ratio)
+
+# Calculate the maximum drawdown
+portfolio_adx['cumulative_return'] = portfolio_adx['total'] / portfolio_adx['total'][0]
+portfolio_adx['cumulative_return'].plot(figsize=(10,6))
+plt.title('Cumulative Return with ADX Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Cumulative Return')
+plt.show()
+
+cumulative_returns = portfolio_adx['cumulative_return'].tolist()
+max_drawdown = 0
+
+for i in range(len(cumulative_returns)):
+    for j in range(i+1, len(cumulative_returns)):
+        drawdown = (cumulative_returns[j] - cumulative_returns[i]) / cumulative_returns[i]
+        if drawdown < max_drawdown:
+            max_drawdown = drawdown
+
+# Print the maximum drawdown
+print('Maximum drawdown:', max_drawdown)
+# Define a function to optimize the strategy parameters
+def optimize_strategy(dataframe):
+    results = []
+    for fast_period in range(5, 21, 5):
+        for slow_period in range(30, 61, 10):
+            portfolio = backtest_strategy(dataframe, fast_period, slow_period)
+            total_return = portfolio['returns'].iloc[-1]
+            sharpe_ratio = (portfolio['returns'].mean() / portfolio['returns'].std()) * np.sqrt(252)
+            results.append((fast_period, slow_period, total_return, sharpe_ratio))
+    results_df = pd.DataFrame(results, columns=['fast_period', 'slow_period', 'total_return', 'sharpe_ratio'])
+    return results_df
+# Optimize the strategy parameters
+results_df = optimize_strategy(df)
+
+# Print the top 5 parameter sets
+top_results = results_df.sort_values(by='total_return', ascending=False).head(5)
+print('Top 5 parameter sets:')
+print(top_results)
+
+# Visualize the parameter optimization results
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16,6))
+
+ax1.scatter(results_df['total_return'], results_df['sharpe_ratio'], alpha=0.5)
+ax1.scatter(top_results['total_return'], top_results['sharpe_ratio'], color='red')
+ax1.set_xlabel('Total Return')
+ax1.set_ylabel('Sharpe Ratio')
+ax1.set_title('Parameter Optimization Results')
+
+ax2.scatter(results_df['fast_period'], results_df['slow_period'], c=results_df['sharpe_ratio'], alpha=0.5)
+ax2.scatter(top_results['fast_period'], top_results['slow_period'], color='red')
+ax2.set_xlabel('Fast Period')
+ax2.set_ylabel('Slow Period')
+ax2.set_title('Parameter Optimization Results')
+
+plt.show()
+Define the function to optimize the strategy parameters
+def optimize_strategy(dataframe):
+results = []
+for fast_period in range(5, 21, 5):
+for slow_period in range(30, 61, 10):
+portfolio = backtest_strategy(dataframe, fast_period, slow_period)
+total_return = portfolio['returns'].iloc[-1]
+sharpe_ratio = (portfolio['returns'].mean() / portfolio['returns'].std()) * np.sqrt(252)
+results.append((fast_period, slow_period, total_return, sharpe_ratio))
+results_df = pd.DataFrame(results, columns=['fast_period', 'slow_period', 'total_return', 'sharpe_ratio'])
+return results_df
+
+Run the optimization function on the BTC-USD dataset
+results_df = optimize_strategy(df)
+
+Print the results sorted by Sharpe ratio in descending order
+print(results_df.sort_values(by='sharpe_ratio', ascending=False))# Find the optimal strategy parameters
+results_df = optimize_strategy(df)
+optimal_params = results_df.loc[results_df['sharpe_ratio'].idxmax()]
+
+# Print the optimal strategy parameters and performance metrics
+print('Optimal Strategy Parameters:')
+print('Fast Period:', int(optimal_params['fast_period']))
+print('Slow Period:', int(optimal_params['slow_period']))
+print('Total Return:', round(optimal_params['total_return'], 4))
+print('Sharpe Ratio:', round(optimal_params['sharpe_ratio'], 4))
+# Define the function to backtest the trading strategy
+def backtest_strategy(dataframe, fast_period, slow_period):
+    # Calculate the moving averages
+    dataframe['fast_ma'] = dataframe['Close'].rolling(window=fast_period).mean()
+    dataframe['slow_ma'] = dataframe['Close'].rolling(window=slow_period).mean()
+
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+    # Take the difference of the signals to generate actual trading orders
+    dataframe['positions'] = dataframe['signal'].diff()
+
+    # Set the initial position to 0 (i.e. flat)
+    dataframe['positions'][0] = 0.0
+
+    # Backtest the trading strategy
+    initial_capital = float(1000)
+    positions = pd.DataFrame(index=dataframe.index).fillna(0.0)
+    positions['BTC-USD'] = 100 * dataframe['signal']   # Buy 100 BTC-USD for each buy signal
+    portfolio = positions.multiply(dataframe['Adj Close'], axis=0)
+    pos_diff = positions.diff()
+    portfolio['holdings'] = (positions.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1)
+    portfolio['cash'] = initial_capital - (pos_diff.multiply(dataframe['Adj Close'], axis=0)).sum(axis=1).cumsum()
+    portfolio['total'] = portfolio['cash'] + portfolio['holdings']
+    portfolio['returns'] = portfolio['total'].pct_change()
+    return portfolio
+
+# Backtest the trading strategy using the ADX indicator
+portfolio_adx = backtest_strategy(df, 10, 30)
+
+# Plot the portfolio value over time
+portfolio_adx['total'].plot(figsize=(10,6))
+plt.title('Total Portfolio Value with ADX Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Value (USD)')
+plt.show()
+
+# Define a function to optimize the strategy parameters
+def optimize_strategy(dataframe):
+    results = []
+    for fast_period in range(5, 21, 5):
+        for slow_period in range(30, 61, 10):
+            portfolio = backtest_strategy(dataframe, fast_period, slow_period)
+            total_return = portfolio['returns'].iloc[-1]
+            sharpe_ratio = (portfolio['returns'].mean() / portfolio['returns'].std()) * np.sqrt(252)
+            results.append((fast_period, slow_period, total_return, sharpe_ratio))
+    results_df = pd.DataFrame(results, columns=['fast_period', 'slow_period', 'total_return', 'sharpe_ratio'])
+    return results_df
+
+# Optimize the strategy parameters
+results_df = optimize_strategy(df)
+print(results_df)
+# Plot the results of the parameter optimization
+plt.figure(figsize=(10, 6))
+plt.scatter(results_df['total_return'], results_df['sharpe_ratio'], c=results_df['fast_period'], cmap='coolwarm')
+plt.colorbar(label='Fast Period')
+plt.xlabel('Total Return')
+plt.ylabel('Sharpe Ratio')
+plt.title('Parameter Optimization Results')
+plt.show()
+# Plot the results of the parameter optimization
+plt.figure(figsize=(10, 6))
+plt.scatter(results_df['total_return'], results_df['sharpe_ratio'], c=results_df['fast_period'], cmap='coolwarm')
+plt.colorbar(label='Fast Period')
+plt.xlabel('Total Return')
+plt.ylabel('Sharpe Ratio')
+plt.title('Parameter Optimization Results')
+plt.show()
+# Find the optimal parameters
+optimal_params = results_df.loc[results_df['sharpe_ratio'].idxmax()]
+
+# Backtest the strategy with the optimal parameters
+portfolio_optimal = backtest_strategy(df, optimal_params['fast_period'], optimal_params['slow_period'])
+
+# Plot the portfolio value over time
+portfolio_optimal['total'].plot(figsize=(10,6))
+plt.title('Total Portfolio Value with Optimized Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Value (USD)')
+plt.show()
+# Select the parameters with the highest Sharpe ratio
+optimal_params = results_df.loc[results_df['sharpe_ratio'].idxmax()]
+
+# Backtest the strategy using the optimal parameters
+portfolio_optimal = backtest_strategy(df, optimal_params['fast_period'], optimal_params['slow_period'])
+
+# Plot the portfolio value over time with the optimal strategy
+portfolio_optimal['total'].plot(figsize=(10,6))
+plt.title('Total Portfolio Value with Optimal ADX Trading Strategy')
+plt.xlabel('Date')
+plt.ylabel('Value (USD)')
+plt.show()
+Define the function to open a buy trade
+def open_buy_trade(symbol, volume):
+trade = mt4.orders_send(symbol=symbol, action=mt4.ORDER_TYPE_BUY, volume=volume)
+return trade
+
+Define the function to open a sell trade
+def open_sell_trade(symbol, volume):
+trade = mt4.orders_send(symbol=symbol, action=mt4.ORDER_TYPE_SELL, volume=volume)
+return trade
+
+Define the function to close all open trades
+def close_all_trades():
+trades = mt4.orders_get()
+for trade in trades:
+if trade.order_type() in [mt4.ORDER_TYPE_BUY, mt4.ORDER_TYPE_SELL]:
+mt4.orders_close(trade.ticket())
+
+Define the function to get the current price of a symbol
+def get_current_price(symbol):
+prices = mt4.rates_get(symbol)
+return prices[-1].bid, prices[-1].ask
+
+Define the function to backtest the trading strategy and open trades
+def backtest_and_trade(dataframe, fast_period, slow_period):
+# Calculate the moving averages
+dataframe['fast_ma'] = dataframe['Close'].rolling(window=fast_period).mean()
+dataframe['slow_ma'] = dataframe['Close'].rolling(window=slow_period).mean()# Generate the buy and sell signals
+dataframe['signal'] = 0.0
+dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+# Take the difference of the signals to generate actual trading orders
+dataframe['positions'] = dataframe['signal'].diff()
+
+# Set the initial position to 0 (i.e. flat)
+dataframe['positions'][0] = 0.0
+
+# Backtest the trading strategy and open trades
+initial_balance = mt4.account_info().balance
+for index, row in dataframe.iterrows():
+    # Check if there are any open trades
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    if len(open_trades) == 0:
+        # No open trades, check if we need to open a new trade
+        if row['positions'] == 1:
+            # Open a new buy trade
+            price = get_current_price(dataframe.name)[1]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            open_buy_trade(dataframe.name, volume)
+        elif row['positions'] == -1:
+            # Open a new sell trade
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            open_sell_trade(dataframe.name, volume)
+    else:
+        # There are open trades, check if we need to close them
+        if row['positions'] == 0:
+            # Close all open trades
+            close_all_trades()
+        elif row['positions'] == -1 and open_trades[0].order_type() == mt4.ORDER_TYPE_BUY:
+            # Close all buy trades and open a new sell trade
+            close_all_trades()
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            open_sell_trade(dataframe.name, volume)
+        elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SE
+# Set up the trading parameters
+fast_period = 14
+slow_period = 28
+
+# Define the trading logic
+def run_trading_logic(dataframe):
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+    # Take the difference of the signals to generate actual trading orders
+    dataframe['positions'] = dataframe['signal'].diff()
+
+    # Set the initial position to 0 (i.e. flat)
+    dataframe['positions'][0] = 0.0
+
+    # Backtest the trading strategy and open trades
+    initial_balance = mt4.account_info().balance
+    for index, row in dataframe.iterrows():
+        # Check if there are any open trades
+        open_trades = mt4.orders_get(symbol=dataframe.name)
+        if len(open_trades) == 0:
+            # No open trades, check if we need to open a new trade
+            if row['positions'] == 1:
+                # Open a new buy trade
+                price = get_current_price(dataframe.name)[1]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_buy_trade(dataframe.name, volume)
+            elif row['positions'] == -1:
+                # Open a new sell trade
+                price = get_current_price(dataframe.name)[0]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_sell_trade(dataframe.name, volume)
+        else:
+            # There are open trades, check if we need to close them
+            if row['positions'] == 0:
+                # Close all open trades
+                close_all_trades()
+            elif row['positions'] == -1 and open_trades[0].order_type() == mt4.ORDER_TYPE_BUY:
+                # Close all buy trades and open a new sell trade
+                close_all_trades()
+                price = get_current_price(dataframe.name)[0]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_sell_trade(dataframe.name, volume)
+            elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SELL:
+                # Close all sell trades and open a new buy trade
+                close_all_trades()
+                price = get_current_price(dataframe.name)[1]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_buy_trade(dataframe.name, volume)
+
+# Set up the data streaming and trading loop
+while True:
+    # Get the latest market data
+    df = get_market_data('EURUSD', 'H1')
+
+    # Calculate the technical indicators
+    df = calculate_technical_indicators(df)
+
+    # Run the trading logic
+    run_trading_logic(df)
+
+    # Wait for the next bar
+    time.sleep(3600)
+# Continuation of previous code
+
+        # Close all sell trades and open a new buy trade
+        close_all_trades()
+        price = get_current_price(dataframe.name)[1]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        open_buy_trade(dataframe.name, volume)
+
+# Close all open trades at the end of the backtest period
+close_all_trades()
+
+# Calculate the final portfolio value
+final_balance = mt4.account_info().balance
+total_return = (final_balance - initial_balance) / initial_balance
+
+# Print the total return of the trading strategy
+print(f'Total Return: {total_return:.2%}')
+# Define a function to open a buy trade
+def open_buy_trade(symbol, volume):
+    price = mt4.symbol_info_tick(symbol).ask
+    sl = price - 100 * mt4.symbol_info(symbol).point
+    tp = price + 200 * mt4.symbol_info(symbol).point
+    result = mt4.order_send(symbol=symbol, type=mt4.ORDER_TYPE_BUY, volume=volume, price=price, sl=sl, tp=tp)
+    if result.retcode == mt4.TRADE_RETCODE_DONE:
+        print("Buy trade opened at price", price)
+    else:
+        print("Error opening buy trade:", result)
+
+# Define a function to open a sell trade
+def open_sell_trade(symbol, volume):
+    price = mt4.symbol_info_tick(symbol).bid
+    sl = price + 100 * mt4.symbol_info(symbol).point
+    tp = price - 200 * mt4.symbol_info(symbol).point
+    result = mt4.order_send(symbol=symbol, type=mt4.ORDER_TYPE_SELL, volume=volume, price=price, sl=sl, tp=tp)
+    if result.retcode == mt4.TRADE_RETCODE_DONE:
+        print("Sell trade opened at price", price)
+    else:
+        print("Error opening sell trade:", result)
+
+# Define a function to close all open trades
+def close_all_trades():
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    for trade in open_trades:
+        result = mt4.order_close(trade.ticket, trade.volume)
+        if result.retcode == mt4.TRADE_RETCODE_DONE:
+            print("Trade", trade.ticket, "closed")
+        else:
+            print("Error closing trade", trade.ticket, ":", result)
+
+# Define a function to backtest and trade the optimal strategy
+def trade_optimal_strategy(dataframe, fast_period, slow_period):
+    # Generate the moving averages
+    dataframe['fast_ma'] = dataframe['adx'].rolling(fast_period).mean()
+    dataframe['slow_ma'] = dataframe['adx'].rolling(slow_period).mean()
+
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+    # Take the difference of the signals to generate actual trading orders
+    dataframe['positions'] = dataframe['signal'].diff()
+
+    # Set the initial position to 0 (i.e. flat)
+    dataframe['positions'][0] = 0.0
+
+    # Backtest the trading strategy and open trades
+    initial_balance = mt4.account_info().balance
+    for index, row in dataframe.iterrows():
+        # Check if there are any open trades
+        open_trades = mt4.orders_get(symbol=dataframe.name)
+        if len(open_trades) == 0:
+            # No open trades, check if we need to open a new trade
+            if row['positions'] == 1:
+                # Open a new buy trade
+                price = get_current_price(dataframe.name)[1]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_buy_trade(dataframe.name, volume)
+            elif row['positions'] == -1:
+                # Open a new sell trade
+                price = get_current_price(dataframe.name)[0]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name
+# Define a function to open a buy trade
+def open_buy_trade(symbol, volume):
+    price = mt4.symbol_info_tick(symbol).ask
+    sl = price - 100 * mt4.symbol_info(symbol).point
+    tp = price + 200 * mt4.symbol_info(symbol).point
+    result = mt4.order_send(symbol=symbol, type=mt4.ORDER_TYPE_BUY, volume=volume, price=price, sl=sl, tp=tp)
+    if result.retcode == mt4.TRADE_RETCODE_DONE:
+        print("Buy trade opened at price", price)
+    else:
+        print("Error opening buy trade:", result)
+
+# Define a function to open a sell trade
+def open_sell_trade(symbol, volume):
+    price = mt4.symbol_info_tick(symbol).bid
+    sl = price + 100 * mt4.symbol_info(symbol).point
+    tp = price - 200 * mt4.symbol_info(symbol).point
+    result = mt4.order_send(symbol=symbol, type=mt4.ORDER_TYPE_SELL, volume=volume, price=price, sl=sl, tp=tp)
+    if result.retcode == mt4.TRADE_RETCODE_DONE:
+        print("Sell trade opened at price", price)
+    else:
+        print("Error opening sell trade:", result)
+
+# Define a function to close all open trades
+def close_all_trades():
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    for trade in open_trades:
+        result = mt4.order_close(trade.ticket, trade.volume)
+        if result.retcode == mt4.TRADE_RETCODE_DONE:
+            print("Trade", trade.ticket, "closed")
+        else:
+            print("Error closing trade", trade.ticket, ":", result)
+
+# Define a function to backtest and trade the optimal strategy
+def trade_optimal_strategy(dataframe, fast_period, slow_period):
+    # Generate the moving averages
+    dataframe['fast_ma'] = dataframe['adx'].rolling(fast_period).mean()
+    dataframe['slow_ma'] = dataframe['adx'].rolling(slow_period).mean()
+
+    # Generate the buy and sell signals
+    dataframe['signal'] = 0.0
+    dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)
+
+    # Take the difference of the signals to generate actual trading orders
+    dataframe['positions'] = dataframe['signal'].diff()
+
+    # Set the initial position to 0 (i.e. flat)
+    dataframe['positions'][0] = 0.0
+
+    # Backtest the trading strategy and open trades
+    initial_balance = mt4.account_info().balance
+    for index, row in dataframe.iterrows():
+        # Check if there are any open trades
+        open_trades = mt4.orders_get(symbol=dataframe.name)
+        if len(open_trades) == 0:
+            # No open trades, check if we need to open a new trade
+            if row['positions'] == 1:
+                # Open a new buy trade
+                price = get_current_price(dataframe.name)[1]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+                open_buy_trade(dataframe.name, volume)
+            elif row['positions'] == -1:
+                # Open a new sell trade
+                price = get_current_price(dataframe.name)[0]
+                volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name
+Define a function to close all open trades for a given symbol
+def close_all_trades(symbol):
+open_trades = mt4.orders_get(symbol=symbol)
+for trade in open_trades:
+mt4.order_close(trade.ticket)
+
+Define a function to monitor the open trades and close them if necessary
+def monitor_trades(dataframe):
+# Check if there are any open trades
+open_trades = mt4.orders_get(symbol=dataframe.name)
+if len(open_trades) > 0:
+# Get the current bid and ask prices
+bid, ask = get_current_price(dataframe.name)
+# Check if the current price is above the stop loss level
+if open_trades[0].order_type() == mt4.ORDER_TYPE_BUY and bid < open_trades[0].stop_loss():
+# Close the buy trade with a market sell order
+mt4.order_send(open_trades[0].ticket, mt4.ORDER_TYPE_SELL, 0, 0, 0)
+elif open_trades[0].order_type() == mt4.ORDER_TYPE_SELL and ask > open_trades[0].stop_loss():
+# Close the sell trade with a market buy order
+mt4.order_send(open_trades[0].ticket, mt4.ORDER_TYPE_BUY, 0, 0, 0)
+
+Define a function to execute the trading strategy
+def execute_strategy(dataframe, fast_period, slow_period):
+# Generate the buy and sell signals
+dataframe['signal'] = 0.0
+dataframe['signal'][fast_period:] = np.where(dataframe['fast_ma'][fast_period:] > dataframe['slow_ma'][fast_period:], 1.0, 0.0)# Take the difference of the signals to generate actual trading orders
+dataframe['positions'] = dataframe['signal'].diff()
+
+# Set the initial position to 0 (i.e. flat)
+dataframe['positions'][0] = 0.0
+
+# Backtest the trading strategy and open trades
+initial_balance = mt4.account_info().balance
+for index, row in dataframe.iterrows():
+    # Check if there are any open trades
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    if len(open_trades) == 0:
+        # No open trades, check if we need to open a new trade
+        if row['positions'] == 1:
+            # Open a new buy trade
+            price = get_current_price(dataframe.name)[1]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            stop_loss = price - (dataframe['atr'][index] * 2)
+            take_profit = price + (dataframe['atr'][index] * 3)
+            open_buy_trade(dataframe.name, volume, stop_loss, take_profit)
+        elif row['positions'] == -1:
+            # Open a new sell trade
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt
+# Take the difference of the signals to generate actual trading orders
+dataframe['positions'] = dataframe['signal'].diff()
+
+# Set the initial position to 0 (i.e. flat)
+dataframe['positions'][0] = 0.0
+
+# Backtest the trading strategy and open trades
+initial_balance = mt4.account_info().balance
+for index, row in dataframe.iterrows():
+    # Check if there are any open trades
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    if len(open_trades) == 0:
+        # No open trades, check if we need to open a new trade
+        if row['positions'] == 1:
+            # Open a new buy trade
+            price = get_current_price(dataframe.name)[1]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            stop_loss = price - (dataframe['atr'][index] * 2)
+            take_profit = price + (dataframe['atr'][index] * 3)
+            open_buy_trade(dataframe.name, volume, stop_loss, take_profit)
+        elif row['positions'] == -1:
+            # Open a new sell trade
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            stop_loss = price + (dataframe['atr'][index] * 2)
+            take_profit = price - (dataframe['atr'][index] * 3)
+            open_sell_trade(dataframe.name, volume, stop_loss, take_profit)
+    else:
+        # There are open trades, check if we need to close them
+        if row['positions'] == 0:
+            # Close all open trades
+            close_all_trades(dataframe.name)
+Define a function to monitor the trades and close them if necessary
+def monitor_trades():
+while True:
+# Get the open trades
+open_trades = mt4.orders_get(symbol=dataframe.name)    # If there are no open trades, break out of the loop
+    if len(open_trades) == 0:
+        break
+    
+    # Check if any trades have reached their stop loss or take profit levels
+    for trade in open_trades:
+        if trade.order_type() == mt4.ORDER_TYPE_BUY:
+            if trade.stop_loss() is not None and get_current_price(dataframe.name)[0] <= trade.stop_loss():
+                # Close the trade at the stop loss level
+                close_trade(trade.ticket(), get_current_price(dataframe.name)[0], trade.volume())
+            elif trade.take_profit() is not None and get_current_price(dataframe.name)[1] >= trade.take_profit():
+                # Close the trade at the take profit level
+                close_trade(trade.ticket(), get_current_price(dataframe.name)[1], trade.volume())
+        elif trade.order_type() == mt4.ORDER_TYPE_SELL:
+            if trade.stop_loss() is not None and get_current_price(dataframe.name)[1] >= trade.stop_loss():
+                # Close the trade at the stop loss level
+                close_trade(trade.ticket(), get_current_price(dataframe.name)[1], trade.volume())
+            elif trade.take_profit() is not None and get_current_price(dataframe.name)[0] <= trade.take_profit():
+                # Close the trade at the take profit level
+                close_trade(trade.ticket(), get_current_price(dataframe.name)[0], trade.volume())
+    
+    # Sleep for 1 second before checking again
+    time.sleep(1)
+# Define the function to manage open trades
+def manage_trades(dataframe):
+    # Get the open trades
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+
+    # Check if there are any open trades
+    if len(open_trades) == 0:
+        return
+
+    # Check if the stop loss or take profit levels have been hit
+    for trade in open_trades:
+        # Get the current price
+        bid, ask = get_current_price(dataframe.name)
+        if trade.order_type() == mt4.ORDER_TYPE_BUY:
+            # Check if the stop loss level has been hit
+            if trade.stop_loss() > 0 and bid < trade.stop_loss():
+                close_trade(trade.order_ticket())
+            # Check if the take profit level has been hit
+            elif trade.take_profit() > 0 and bid > trade.take_profit():
+                close_trade(trade.order_ticket())
+        elif trade.order_type() == mt4.ORDER_TYPE_SELL:
+            # Check if the stop loss level has been hit
+            if trade.stop_loss() > 0 and ask > trade.stop_loss():
+                close_trade(trade.order_ticket())
+            # Check if the take profit level has been hit
+            elif trade.take_profit() > 0 and ask < trade.take_profit():
+                close_trade(trade.order_ticket())
+
+# Define the function to close a trade
+def close_trade(ticket):
+    mt4.order_close(ticket, lot=mt4.order_get(ticket).volume)
+
+# Define the function to close all open trades
+def close_all_trades():
+    open_trades = mt4.orders_get()
+    for trade in open_trades:
+        close_trade(trade.order_ticket())
+
+# Define the function to open a buy trade
+def open_buy_trade(symbol, volume):
+    mt4.order_send(symbol=symbol, 
+                   type=mt4.ORDER_TYPE_BUY,
+                   volume=volume,
+                   magic=123456)
+
+# Define the function to open a sell trade
+def open_sell_trade(symbol, volume):
+    mt4.order_send(symbol=symbol, 
+                   type=mt4.ORDER_TYPE_SELL,
+                   volume=volume,
+                   magic=123456)
+
+# Define the function to get the current price
+def get_current_price(symbol):
+    tick = mt4.symbol_info_tick(symbol)
+    return tick.bid, tick.ask
+
+# Backtest the trading strategy and manage open trades
+initial_balance = mt4.account_info().balance
+for index, row in dataframe.iterrows():
+    # Check if we need to manage any open trades
+    manage_trades(dataframe)
+
+    # Check if we need to open a new trade
+    if row['positions'] == 1:
+        # Open a new buy trade
+        price = get_current_price(dataframe.name)[1]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        open_buy_trade(dataframe.name, volume)
+    elif row['positions'] == -1:
+        # Open a new sell trade
+        price = get_current_price(dataframe.name)[0]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        open_sell_trade(dataframe.name, volume)
+
+# Close all open trades at the end of the backtest
+close_all_trades()
+    elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SELL:
+            # Close all sell trades and open a new buy trade
+            close_all_trades()
+            price = get_current_price(dataframe.name)[1]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            open_buy_trade(dataframe.name, volume)
+import logging
+
+# Set up logging
+logging.basicConfig(filename='trading.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Backtest the trading strategy and open trades
+initial_balance = mt4.account_info().balance
+for index, row in dataframe.iterrows():
+    # Check if there are any open trades
+    try:
+        open_trades = mt4.orders_get(symbol=dataframe.name)
+    except:
+        logging.error('Error fetching open trades', exc_info=True)
+        continue
+        
+    if len(open_trades) == 0:
+        # No open trades, check if we need to open a new trade
+        if row['positions'] == 1:
+            # Open a new buy trade
+            price = get_current_price(dataframe.name)[1]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            try:
+                open_buy_trade(dataframe.name, volume)
+            except:
+                logging.error('Error opening buy trade', exc_info=True)
+        elif row['positions'] == -1:
+            # Open a new sell trade
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            try:
+                open_sell_trade(dataframe.name, volume)
+            except:
+                logging.error('Error opening sell trade', exc_info=True)
+    else:
+        # There are open trades, check if we need to close them
+        if row['positions'] == 0:
+            # Close all open trades
+            try:
+                close_all_trades()
+            except:
+                logging.error('Error closing trades', exc_info=True)
+        elif row['positions'] == -1 and open_trades[0].order_type() == mt4.ORDER_TYPE_BUY:
+            # Close all buy trades and open a new sell trade
+            try:
+                close_all_trades()
+            except:
+                logging.error('Error closing trades', exc_info=True)
+            price = get_current_price(dataframe.name)[0]
+            volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+            try:
+                open_sell_trade(dataframe.name, volume)
+            except:
+                logging.error('Error opening sell trade', exc_info=True)
+        elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SELL:
+            # Close all sell trades and open a new buy trade
+            try:
+close_all_trades()
+except:
+logging.error('Error closing trades', exc_info=True)
+price = get_current_price(dataframe.name)[1]
+volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+try:
+open_buy_trade(dataframe.name, volume)
+except:
+logging.error('Error opening buy trade', exc_info=True)
+else:
+# Do nothing
+pass
+
+Print the final account balance
+final_balance = mt4.account_info().balance
+print(f'Initial balance: {initial_balance}')
+print(f'Final balance: {final_balance}')        logging.info('Opened new buy trade for {} at price {} and volume {}'.format(dataframe.name, price, volume))
+    elif row['positions'] == -1:
+        # Open a new sell trade
+        price = get_current_price(dataframe.name)[0]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        try:
+            open_sell_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening sell trade', exc_info=True)
+        logging.info('Opened new sell trade for {} at price {} and volume {}'.format(dataframe.name, price, volume))
+else:
+    # There are open trades, check if we need to close them
+    if row['positions'] == 0:
+        # Close all open trades
+        try:
+            close_all_trades()
+        except:
+            logging.error('Error closing trades', exc_info=True)
+        logging.info('Closed all open trades')
+    elif row['positions'] == -1 and open_trades[0].order_type() == mt4.ORDER_TYPE_BUY:
+        # Close all buy trades and open a new sell trade
+        try:
+            close_all_trades()
+        except:
+            logging.error('Error closing trades', exc_info=True)
+        price = get_current_price(dataframe.name)[0]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        try:
+            open_sell_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening sell trade', exc_info=True)
+        logging.info('Closed all buy trades and opened new sell trade for {} at price {} and volume {}'.format(dataframe.name, price, volume))
+    elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SELL:
+        # Close all sell trades and open a new buy trade
+        try:
+            close_all_trades()
+        except:
+            logging.error('Error closing trades', exc_info=True)
+        price = get_current_price(dataframe.name)[1]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        try:
+            open_buy_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening buy trade', exc_info=True)
+        logging.info('Closed all sell trades and opened new buy trade for {} at price {} and volume {}'.format(dataframe.name, price, volume))
+
+time.sleep(5) # wait for 5 seconds before checking again
+mt4.shutdown() # shutdown connection to MT4 platform
+logging.info('Trading bot finished execution')            open_buy_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening buy trade', exc_info=True)
+            
+# Wait for a minute before checking the next row
+time.sleep(60)
+    elif row['positions'] == 1 and open_trades[0].order_type() == mt4.ORDER_TYPE_SELL:
+        # Close all sell trades and open a new buy trade
+        try:
+            close_all_trades()
+        except:
+            logging.error('Error closing trades', exc_info=True)
+        price = get_current_price(dataframe.name)[1]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        try:
+            open_buy_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening buy trade', exc_info=True)
+
+# Wait for a minute before checking the next row
+time.sleep(60) 
+Close all trades at the end of the backtest
+try:
+close_all_trades()
+except:
+logging.error('Error closing trades at the end of backtest', exc_info=True)
+
+Print the final balance
+final_balance = mt4.account_info().balance
+print(f'Initial balance: {initial_balance:.2f} USD')
+print(f'Final balance: {final_balance:.2f} USD')
+
+Close the connection to MetaTrader 4
+mt4.shutdown()
+
+Stop the streaming session
+session.stop_streaming()        price = get_current_price(dataframe.name)[1]
+        volume = (initial_balance * 0.01) / (price * mt4.symbol_info(dataframe.name).contract_size)
+        try:
+            open_buy_trade(dataframe.name, volume)
+        except:
+            logging.error('Error opening buy trade', exc_info=True)
+    else:
+        # Do nothing
+        pass
+Close any remaining trades at the end of the backtest
+try:
+close_all_trades()
+except:
+logging.error('Error closing trades', exc_info=True)
+
+Output the final balance
+final_balance = mt4.account_info().balance
+logging.info(f'Initial balance: {initial_balance}, Final balance: {final_balance}')
+
+Disconnect from the MT4 terminal
+mt4.shutdown()
+
+Plot the equity curve
+plt.plot(equity_curve)
+plt.title('Equity Curve')
+plt.xlabel('Trade Number')
+plt.ylabel('Equity')
+plt.show()def open_buy_trade(symbol, volume):
+    '''Open a buy trade for the given symbol and volume'''
+    price = get_current_price(symbol)[1]
+    stop_loss = price - (3 * get_average_true_range(symbol))
+    take_profit = price + (2 * get_average_true_range(symbol))
+    mt4.order_send(symbol=symbol, action=mt4.ORDER_TYPE_BUY, volume=volume, price=price,
+                    slippage=3, stoploss=stop_loss, takeprofit=take_profit)
+
+def open_sell_trade(symbol, volume):
+    '''Open a sell trade for the given symbol and volume'''
+    price = get_current_price(symbol)[0]
+    stop_loss = price + (3 * get_average_true_range(symbol))
+    take_profit = price - (2 * get_average_true_range(symbol))
+    mt4.order_send(symbol=symbol, action=mt4.ORDER_TYPE_SELL, volume=volume, price=price,
+                    slippage=3, stoploss=stop_loss, takeprofit=take_profit)
+
+def close_all_trades():
+    '''Close all open trades for the current symbol'''
+    open_trades = mt4.orders_get(symbol=dataframe.name)
+    for trade in open_trades:
+        mt4.order_close(trade.ticket)
+
+# Run the trading strategy
+run_strategy('EURUSD', 'H1', 10000, '2020-01-01', '2021-01-01')
+
+
+
+Deep Learning Algorithm 
+
+// Load the necessary libraries
+#property script_show_inputs
+#property indicator_chart_window
+#property indicator_buffers 2
+#property indicator_plots 2
+#property indicator_label1 "Buy Signal"
+#property indicator_type1 DRAW_ARROW
+#property indicator_color1 clrGreen
+#property indicator_style1 STYLE_SOLID
+#property indicator_width1 3
+#property indicator_label2 "Sell Signal"
+#property indicator_type2 DRAW_ARROW
+#property indicator_color2 clrRed
+#property indicator_style2 STYLE_SOLID
+#property indicator_width2 3
+
+#include <stdlib.mqh>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <windows.h>
+#include <time.h>
+
+// Set the deep learning model parameters
+int    n_input         = 4; // Number of input features
+int    n_hidden        = 5; // Number of hidden units
+int    n_output        = 2; // Number of output classes (buy or sell)
+double learning_rate   = 0.001; // Learning rate for gradient descent
+int    n_epochs        = 1000; // Number of training epochs
+int    batch_size      = 32; // Batch size for mini-batch gradient descent
+int    random_seed     = 42; // Seed for random number generator
+
+// Define the neural network structure
+struct NeuralNetwork {
+   int    n_input; // Number of input features
+   int    n_hidden; // Number of hidden units
+   int    n_output; // Number of output classes
+   double *W1; // Weights of the first layer
+   double *b1; // Biases of the first layer
+   double *W2; // Weights of the second layer
+   double *b2; // Biases of the second layer
+};
+
+// Initialize the neural network with random weights
+void nn_init(NeuralNetwork &nn, int n_input, int n_hidden, int n_output) {
+   nn.n_input  = n_input;
+   nn.n_hidden = n_hidden;
+   nn.n_output = n_output;
+   nn.W1       = new double[n_input * n_hidden];
+   nn.b1       = new double[n_hidden];
+   nn.W2       = new double[n_hidden * n_output];
+   nn.b2       = new double[n_output];
+   srand(random_seed);
+   for (int i = 0; i < n_input * n_hidden; i++) nn.W1[i] = (double)rand() / RAND_MAX - 0.5;
+   for (int i = 0; i < n_hidden; i++) nn.b1[i] = (double)rand() / RAND_MAX - 0.5;
+   for (int i = 0; i < n_hidden * n_output; i++) nn.W2[i] = (double)rand() / RAND_MAX - 0.5;
+   for (int i = 0; i < n_output; i++) nn.b2[i] = (double)rand() / RAND_MAX - 0.5;
+}
+
+// Compute the sigmoid activation function
+double sigmoid(double x) {
+   return 1.0 / (1.0 + exp(-x));
+}
+
+// Compute the softmax activation function
+void softmax(double *x, int n) {
+   double max_x = -INFINITY;
+   for (int i = 0; i < n; i++) {
+      if (x[i] > max_x) max_x = x[i];
+   }
+   double sum = 0.
+// Defining the neural network architecture
+int input_size = sequence_length;
+int num_features = ArraySize(train_input[0]);
+int output_size = ArraySize(train_output[0]);
+
+int num_neurons = 64;
+double dropout_rate = 0.2;
+
+int lstm1 = LSTM_Add(neural_network, input_size, num_neurons, WHS_SIGMOID);
+LSTM_AddDropout(neural_network, dropout_rate);
+int lstm2 = LSTM_Add(neural_network, num_neurons, num_neurons, WHS_SIGMOID);
+LSTM_AddDropout(neural_network, dropout_rate);
+int lstm3 = LSTM_Add(neural_network, num_neurons, num_neurons, WHS_SIGMOID);
+LSTM_AddDropout(neural_network, dropout_rate);
+Dense_Add(neural_network, num_neurons, WHS_SIGMOID);
+Dense_Add(neural_network, num_neurons, WHS_SIGMOID);
+Dense_Add(neural_network, output_size, WHS_SIGMOID);
+// Training the model
+double learning_rate = 0.001;
+int num_epochs = 50;
+int batch_size = 64;
+
+int optimizer = Optimizer_Adam(neural_network, learning_rate);
+Optimizer_SetBatchSize(optimizer, batch_size);
+for(int i=0; i<num_epochs; i++) {
+    Optimizer_ResetGradients(optimizer);
+    for(int j=0; j<ArraySize(train_input); j+=batch_size) {
+        int batch_input[], batch_output[];
+        ArrayCopy(batch_input, train_input, j, batch_size);
+        ArrayCopy(batch_output, train_output, j, batch_size);
+        NeuralNetwork_TrainBatch(neural_network, batch_input, batch_output, ArraySize(batch_input), optimizer);
+    }
+    double train_loss = NeuralNetwork_Loss(neural_network, train_input, train_output);
+    Print("Epoch ", i, ", Train Loss: ", train_loss);
+}
+// Import necessary libraries
+#include <Tensorflow/tfstdlib.h>
+#include <Tensorflow/tensorflow.mqh>
+#include <Python/python.mqh>
+
+// Define the neural network architecture
+input int NUM_FEATURES = 5;
+input int NUM_NEURONS = 128;
+input int NUM_OUTPUTS = 1;
+
+class NeuralNetwork
+{
+    // Define the model's layers
+    input Tensorflow::Layers input_layer = Layers(NUM_FEATURES);
+    input Tensorflow::Layers hidden_layer = Layers(NUM_NEURONS, ACTIVATION_FUNCTION_RELU);
+    input Tensorflow::Layers output_layer = Layers(NUM_OUTPUTS, ACTIVATION_FUNCTION_SIGMOID);
+
+    // Define the model's input and output tensors
+    input Tensorflow::Tensor x;
+    input Tensorflow::Tensor y;
+    output Tensorflow::Tensor y_hat;
+
+    // Define the optimizer and loss function
+    input Tensorflow::Optimizer optimizer = Optimizer(OPTIMIZER_ADAM, LEARNING_RATE = 0.001);
+    input Tensorflow::LossFunction loss_function = LossFunction(LOSS_FUNCTION_MEAN_SQUARED_ERROR);
+
+    // Define the training operation
+    output Tensorflow::Operation train_op = optimizer.minimize(loss_function(y_hat, y));
+
+    // Define the session
+    input Tensorflow::Session session = Session();
+
+    // Define the model's initializer operation
+    output Tensorflow::Operation initializer_op = session.global_variables_initializer();
+
+public:
+    NeuralNetwork()
+    {
+        // Initialize the model's variables
+        session.run(initializer_op);
+    }
+
+    void train(const double&[][NUM_FEATURES] x_data, const double&[] y_data, const int& num_examples, const int& num_epochs, const int& batch_size)
+    {
+        // Define the input and output placeholders
+        Tensorflow::Placeholder x_placeholder = Placeholder({num_examples, NUM_FEATURES});
+        Tensorflow::Placeholder y_placeholder = Placeholder({num_examples, NUM_OUTPUTS});
+
+        // Train the model
+        for(int epoch = 0; epoch < num_epochs; epoch++)
+        {
+            for(int batch_start = 0; batch_start < num_examples; batch_start += batch_size)
+            {
+                int batch_end = batch_start + batch_size > num_examples ? num_examples : batch_start + batch_size;
+
+                // Get the current batch of training data
+                double batch_x[batch_end - batch_start][NUM_FEATURES];
+                double batch_y[batch_end - batch_start][NUM_OUTPUTS];
+
+                for(int i = 0; i < batch_end - batch_start; i++)
+                {
+                    for(int j = 0; j < NUM_FEATURES; j++)
+                    {
+                        batch_x[i][j] = x_data[batch_start + i][j];
+                    }
+                    batch_y[i][0] = y_data[batch_start + i];
+                }
+
+                // Train on the current batch of data
+                Tensorflow::FeedDict feed_dict = { {x_placeholder, Tensorflow::Tensor(batch_x, {batch_end - batch_start, NUM_FEATURES})}, {y_placeholder, Tensorflow::Tensor(batch_y, {batch_end - batch_start, NUM_OUTPUTS})} };
+                session.run(train_op, feed_dict);
+            }
+        }
+    }
+
+    double predict(const double&[] x_data)
+    {
+        // Run a prediction using the trained model
+        Tensorflow::FeedDict feed_dict = { {x, Tensorflow::Tensor(x_data, {1, NUM_FEATURES})} };
+        return session.run(y_hat, feed_dict).data()[0][0];
+    }
+};
+// Define the trading bot
+class TradingBot
+{
+// Define the bot's parameters
+input double RISK_PER_TRADE = 0.01;
+input double TAKE_PROFIT = 0.05;
+input double STOP_LOSS = 0.02;
+input double TRAILING_STOP = 0.01;// Define the bot's data and neural network
+input double[][NUM_FEATURES] x_data;
+input double[] y_data;
+NeuralNetwork neural_network;
+public:
+TradingBot()
+{
+// Load the data and train the neural network
+loadData();
+neural_network.train(x_data, y_data, ArraySize(x_data), 100, 32);
+}void onTick()
+{
+    // Get the current market data
+    double open = SymbolInfoDouble(Symbol(), SYMBOL_OPEN);
+    double high = SymbolInfoDouble(Symbol(), SYMBOL_HIGH);
+    double low = SymbolInfoDouble(Symbol(), SYMBOL_LOW);
+    double close = SymbolInfoDouble(Symbol(), SYMBOL_CLOSE);
+
+    // Get the predicted price movement using the neural network
+    double prediction = neural_network.predict({open, high, low, close, 0.0});
+
+    // Determine the bot's trading decision based on the prediction
+    int trade_type = 0;
+    if(prediction > 0.5)
+    {
+        trade_type = TRADE_ACTION_BUY;
+    }
+    else
+    {
+        trade_type = TRADE_ACTION_SELL;
+    }
+
+    // Calculate the trade's parameters based on the bot's settings and the current market price
+    double price = trade_type == TRADE_ACTION_BUY ? SymbolInfoDouble(Symbol(), SYMBOL_ASK) : SymbolInfoDouble(Symbol(), SYMBOL_BID);
+    double stop_loss_price = trade_type == TRADE_ACTION_BUY ? price - (STOP_LOSS * price) : price + (STOP_LOSS * price);
+    double take_profit_price = trade_type == TRADE_ACTION_BUY ? price + (TAKE_PROFIT * price) : price - (TAKE_PROFIT * price);
+    double trailing_stop_distance = TRAILING_STOP * price;
+
+    // Calculate the trade's lot size based on the bot's risk per trade
+    double lot_size = AccountBalance() * RISK_PER_TRADE / (stop_loss_price - price);
+
+    // Enter the trade
+    if(trade_type == TRADE_ACTION_BUY)
+    {
+        Trade.Open(Symbol(), TRADE_TYPE_BUY, lot_size, price, 0, stop_loss_price, take_profit_price, "Trading Bot");
+    }
+    else
+    {
+        Trade.Open(Symbol(), TRADE_TYPE_SELL, lot_size, price, 0, stop_loss_price, take_profit_price, "Trading Bot");
+    }
+}
+
+void loadData()
+{
+    // Load the historical data and labels
+    // ...
+
+    // Normalize the data
+    // ...
+
+    // Split the data into training and testing sets
+    // ...
+
+    // Convert the labels to binary classification labels
+    // ...
+
+    // Save the processed data and labels as class variables
+    // ...
+}
+};
+
+// Create an instance of the trading bot and run it
+void OnTick()
+{
+static TradingBot trading_bot;trading_bot.onTick();}// Import necessary libraries
+#include <Tensorflow/tfstdlib.h>
+#include <Tensorflow/tensorflow.mqh>
+#include <Python/python.mqh>
+
+// Define the neural network architecture
+input int NUM_FEATURES = 5;
+input int NUM_NEURONS = 128;
+input int NUM_OUTPUTS = 1;
+
+class NeuralNetwork
+{
+    // Define the model's layers
+    input Tensorflow::Layers input_layer = Layers(NUM_FEATURES);
+    input Tensorflow::Layers hidden_layer = Layers(NUM_NEURONS, ACTIVATION_FUNCTION_RELU);
+    input Tensorflow::Layers output_layer = Layers(NUM_OUTPUTS, ACTIVATION_FUNCTION_SIGMOID);
+
+    // Define the model's input and output tensors
+    input Tensorflow::Tensor x;
+    input Tensorflow::Tensor y;
+    output Tensorflow::Tensor y_hat;
+
+    // Define the optimizer and loss function
+    input Tensorflow::Optimizer optimizer = Optimizer(OPTIMIZER_ADAM, LEARNING_RATE = 0.001);
+    input Tensorflow::LossFunction loss_function = LossFunction(LOSS_FUNCTION_MEAN_SQUARED_ERROR);
+
+    // Define the training operation
+    output Tensorflow::Operation train_op = optimizer.minimize(loss_function(y_hat, y));
+
+    // Define the session
+    input Tensorflow::Session session = Session();
+
+    // Define the model's initializer operation
+    output Tensorflow::Operation initializer_op = session.global_variables_initializer();
+
+public:
+    NeuralNetwork()
+    {
+        // Initialize the model's variables
+        session.run(initializer_op);
+    }
+
+    void train(const double&[][NUM_FEATURES] x_data, const double&[] y_data, const int& num_examples, const int& num_epochs, const int& batch_size)
+    {
+        // Define the input and output placeholders
+        Tensorflow::Placeholder x_placeholder = Placeholder({num_examples, NUM_FEATURES});
+        Tensorflow::Placeholder y_placeholder = Placeholder({num_examples, NUM_OUTPUTS});
+
+        // Train the model
+        for(int epoch = 0; epoch < num_epochs; epoch++)
+        {
+            for(int batch_start = 0; batch_start < num_examples; batch_start += batch_size)
+            {
+                int batch_end = batch_start + batch_size > num_examples ? num_examples : batch_start + batch_size;
+
+                // Get the current batch of training data
+                double batch_x[batch_end - batch_start][NUM_FEATURES];
+                double batch_y[batch_end - batch_start][NUM_OUTPUTS];
+
+                for(int i = 0; i < batch_end - batch_start; i++)
+                {
+                    for(int j = 0; j < NUM_FEATURES; j++)
+                    {
+                        batch_x[i][j] = x_data[batch_start + i][j];
+                    }
+                    batch_y[i][0] = y_data[batch_start + i];
+                }
+
+                // Train on the current batch of data
+                Tensorflow::FeedDict feed_dict = { {x_placeholder, Tensorflow::Tensor(batch_x, {batch_end - batch_start, NUM_FEATURES})}, {y_placeholder, Tensorflow::Tensor(batch_y, {batch_end - batch_start, NUM_OUTPUTS})} };
+                session.run(train_op, feed_dict);
+            }
+        }
+    }
+
+    double predict(const double&[] x_data)
+    {
+        // Run a prediction using the trained model
+        Tensorflow::FeedDict feed_dict = { {x, Tensorflow::Tensor(x_data, {1, NUM_FEATURES})} };
+        return session.run(y_hat, feed_dict).data()[0][0];
+    }
+};
+
+// Define the trading bot
+class TradingBot
+{
+    NeuralNetwork model;
+
+// Import necessary libraries
+#include <Tensorflow/tfstdlib.h>
+#include <Tensorflow/tensorflow.mqh>
+#include <Python/python.mqh>
+
+// Define the neural network architecture
+input int NUM_FEATURES = 5;
+input int NUM_NEURONS = 128;
+input int NUM_OUTPUTS = 1;
+
+class NeuralNetwork
+{
+    // Define the model's layers
+    input Tensorflow::Layers input_layer = Layers(NUM_FEATURES);
+    input Tensorflow::Layers hidden_layer = Layers(NUM_NEURONS, ACTIVATION_FUNCTION_RELU);
+    input Tensorflow::Layers output_layer = Layers(NUM_OUTPUTS, ACTIVATION_FUNCTION_SIGMOID);
+
+    // Define the model's input and output tensors
+    input Tensorflow::Tensor x;
+    input Tensorflow::Tensor y;
+    output Tensorflow::Tensor y_hat;
+
+    // Define the optimizer and loss function
+    input Tensorflow::Optimizer optimizer = Optimizer(OPTIMIZER_ADAM, LEARNING_RATE = 0.001);
+    input Tensorflow::LossFunction loss_function = LossFunction(LOSS_FUNCTION_MEAN_SQUARED_ERROR);
+
+    // Define the training operation
+    output Tensorflow::Operation train_op = optimizer.minimize(loss_function(y_hat, y));
+
+    // Define the session
+    input Tensorflow::Session session = Session();
+
+    // Define the model's initializer operation
+    output Tensorflow::Operation initializer_op = session.global_variables_initializer();
+
+public:
+    NeuralNetwork()
+    {
+        // Initialize the model's variables
+        session.run(initializer_op);
+    }
+
+    void train(const double&[][NUM_FEATURES] x_data, const double&[] y_data, const int& num_examples, const int& num_epochs, const int& batch_size)
+    {
+        // Define the input and output placeholders
+        Tensorflow::Placeholder x_placeholder = Placeholder({num_examples, NUM_FEATURES});
+        Tensorflow::Placeholder y_placeholder = Placeholder({num_examples, NUM_OUTPUTS});
+
+        // Train the model
+        for(int epoch = 0; epoch < num_epochs; epoch++)
+        {
+            for(int batch_start = 0; batch_start < num_examples; batch_start += batch_size)
+            {
+                int batch_end = batch_start + batch_size > num_examples ? num_examples : batch_start + batch_size;
+
+                // Get the current batch of training data
+                double batch_x[batch_end - batch_start][NUM_FEATURES];
+                double batch_y[batch_end - batch_start][NUM_OUTPUTS];
+
+                for(int i = 0; i < batch_end - batch_start; i++)
+                {
+                    for(int j = 0; j < NUM_FEATURES; j++)
+                    {
+                        batch_x[i][j] = x_data[batch_start + i][j];
+                    }
+                    batch_y[i][0] = y_data[batch_start + i];
+                }
+
+                // Train on the current batch of data
+                Tensorflow::FeedDict feed_dict = { {x_placeholder, Tensorflow::Tensor(batch_x, {batch_end - batch_start, NUM_FEATURES})}, {y_placeholder, Tensorflow::Tensor(batch_y, {batch_end - batch_start, NUM_OUTPUTS})} };
+                session.run(train_op, feed_dict);
+            }
+        }
+    }
+
+    double predict(const double&[] x_data)
+    {
+        // Run a prediction using the trained model
+        Tensorflow::FeedDict feed_dict = { {x, Tensorflow::Tensor(x_data, {1, NUM_FEATURES})} };
+        return session.run(y_hat, feed_dict).data()[0][0];
+    }
+};
+
+// Define the trading bot class
+// Import necessary libraries
+#include <Tensorflow/tfstdlib.h>
+#include <Tensorflow/tensorflow.mqh>
+#include <Python/python.mqh>
+
+// Define the neural network architecture
+input int NUM_FEATURES = 5;
+input int NUM_NEURONS = 128;
+input int NUM_OUTPUTS = 1;
+
+class NeuralNetwork
+{
+    // Define the model's layers
+    input Tensorflow::Layers input_layer = Layers(NUM_FEATURES);
+    input Tensorflow::Layers hidden_layer = Layers(NUM_NEURONS, ACTIVATION_FUNCTION_RELU);
+    input Tensorflow::Layers output_layer = Layers(NUM_OUTPUTS, ACTIVATION_FUNCTION_SIGMOID);
+
+    // Define the model's input and output tensors
+    input Tensorflow::Tensor x;
+    input Tensorflow::Tensor y;
+    output Tensorflow::Tensor y_hat;
+
+    // Define the optimizer and loss function
+    input Tensorflow::Optimizer optimizer = Optimizer(OPTIMIZER_ADAM, LEARNING_RATE = 0.001);
+    input Tensorflow::LossFunction loss_function = LossFunction(LOSS_FUNCTION_MEAN_SQUARED_ERROR);
+
+    // Define the training operation
+    output Tensorflow::Operation train_op = optimizer.minimize(loss_function(y_hat, y));
+
+    // Define the session
+    input Tensorflow::Session session = Session();
+
+    // Define the model's initializer operation
+    output Tensorflow::Operation initializer_op = session.global_variables_initializer();
+
+public:
+    NeuralNetwork()
+    {
+        // Initialize the model's variables
+        session.run(initializer_op);
+    }
+
+    void train(const double&[][NUM_FEATURES] x_data, const double&[] y_data, const int& num_examples, const int& num_epochs, const int& batch_size)
+    {
+        // Define the input and output placeholders
+        Tensorflow::Placeholder x_placeholder = Placeholder({num_examples, NUM_FEATURES});
+        Tensorflow::Placeholder y_placeholder = Placeholder({num_examples, NUM_OUTPUTS});
+
+        // Train the model
+        for(int epoch = 0; epoch < num_epochs; epoch++)
+        {
+            for(int batch_start = 0; batch_start < num_examples; batch_start += batch_size)
+            {
+                int batch_end = batch_start + batch_size > num_examples ? num_examples : batch_start + batch_size;
+
+                // Get the current batch of training data
+                double batch_x[batch_end - batch_start][NUM_FEATURES];
+                double batch_y[batch_end - batch_start][NUM_OUTPUTS];
+
+                for(int i = 0; i < batch_end - batch_start; i++)
+                {
+                    for(int j = 0; j < NUM_FEATURES; j++)
+                    {
+                        batch_x[i][j] = x_data[batch_start + i][j];
+                    }
+                    batch_y[i][0] = y_data[batch_start + i];
+                }
+
+                // Train on the current batch of data
+                Tensorflow::FeedDict feed_dict = { {x_placeholder, Tensorflow::Tensor(batch_x, {batch_end - batch_start, NUM_FEATURES})}, {y_placeholder, Tensorflow::Tensor(batch_y, {batch_end - batch_start, NUM_OUTPUTS})} };
+                session.run(train_op, feed_dict);
+            }
+        }
+    }
+
+    double predict(const double&[] x_data)
+    {
+        // Run a prediction using the trained model
+        Tensorflow::FeedDict feed_dict = { {x, Tensorflow::Tensor(x_data, {1, NUM_FEATURES})} };
+        return session.run(y_hat, feed_dict).data()[0][0];
+    }
+};
+
+// Define the trading algorithm
+input double TRADE_AMOUNT
+// Import necessary libraries
+#include <Tensorflow/tfstdlib.h>
+#include <Tensorflow/tensorflow.mqh>
+#include <Python/python.mqh>
+
+// Define the neural network architecture
+input int NUM_FEATURES = 5;
+input int NUM_NEURONS = 128;
+input int NUM_OUTPUTS = 1;
+
+class NeuralNetwork
+{
+    // Define the model's layers
+    input Tensorflow::Layers input_layer = Layers(NUM_FEATURES);
+    input Tensorflow::Layers hidden_layer = Layers(NUM_NEURONS, ACTIVATION_FUNCTION_RELU);
+    input Tensorflow::Layers output_layer = Layers(NUM_OUTPUTS, ACTIVATION_FUNCTION_SIGMOID);
+
+    // Define the model's input and output tensors
+    input Tensorflow::Tensor x;
+    input Tensorflow::Tensor y;
+    output Tensorflow::Tensor y_hat;
+
+    // Define the optimizer and loss function
+    input Tensorflow::Optimizer optimizer = Optimizer(OPTIMIZER_ADAM, LEARNING_RATE = 0.001);
+    input Tensorflow::LossFunction loss_function = LossFunction(LOSS_FUNCTION_MEAN_SQUARED_ERROR);
+
+    // Define the training operation
+    output Tensorflow::Operation train_op = optimizer.minimize(loss_function(y_hat, y));
+
+    // Define the session
+    input Tensorflow::Session session = Session();
+
+    // Define the model's initializer operation
+    output Tensorflow::Operation initializer_op = session.global_variables_initializer();
+
+public:
+    NeuralNetwork()
+    {
+        // Initialize the model's variables
+        session.run(initializer_op);
+    }
+
+    void train(const double&[][NUM_FEATURES] x_data, const double&[] y_data, const int& num_examples, const int& num_epochs, const int& batch_size)
+    {
+        // Define the input and output placeholders
+        Tensorflow::Placeholder x_placeholder = Placeholder({num_examples, NUM_FEATURES});
+        Tensorflow::Placeholder y_placeholder = Placeholder({num_examples, NUM_OUTPUTS});
+
+        // Train the model
+        for(int epoch = 0; epoch < num_epochs; epoch++)
+        {
+            for(int batch_start = 0; batch_start < num_examples; batch_start += batch_size)
+            {
+                int batch_end = batch_start + batch_size > num_examples ? num_examples : batch_start + batch_size;
+
+                // Get the current batch of training data
+                double batch_x[batch_end - batch_start][NUM_FEATURES];
+                double batch_y[batch_end - batch_start][NUM_OUTPUTS];
+
+                for(int i = 0; i < batch_end - batch_start; i++)
+                {
+                    for(int j = 0; j < NUM_FEATURES; j++)
+                    {
+                        batch_x[i][j] = x_data[batch_start + i][j];
+                    }
+                    batch_y[i][0] = y_data[batch_start + i];
+                }
+
+                // Train on the current batch of data
+                Tensorflow::FeedDict feed_dict = { {x_placeholder, Tensorflow::Tensor(batch_x, {batch_end - batch_start, NUM_FEATURES})}, {y_placeholder, Tensorflow::Tensor(batch_y, {batch_end - batch_start, NUM_OUTPUTS})} };
+                session.run(train_op, feed_dict);
+            }
+        }
+    }
+
+    double predict(const double&[] x_data)
+    {
+        // Run a prediction using the trained model
+        Tensorflow::FeedDict feed_dict = { {x, Tensorflow::Tensor(x_data, {1, NUM_FEATURES})} };
+        return session.run(y_hat, feed_dict).data()[0][0];
+    }
+
+    void save_model(string path)
+// Function to get the latest data and perform predictions
+void performTrading()
+{
+    double data[NUM_FEATURES];
+
+    // Get the latest data
+    for(int i = 0; i < NUM_FEATURES; i++)
+    {
+        data[i] = getLatestData(i);
+    }
+
+    // Perform prediction using the trained model
+    double prediction = nn.predict(data);
+
+    // Perform trading based on the prediction
+    if(prediction > THRESHOLD)
+    {
+        buy();
+    }
+    else if(prediction < -THRESHOLD)
+    {
+        sell();
+    }
+}
+
+int start()
+{
+    // Connect to the trading server
+    connectToServer();
+
+    // Train the neural network
+    nn.train(x_data, y_data, NUM_EXAMPLES, NUM_EPOCHS, BATCH_SIZE);
+
+    while(true)
+    {
+        // Wait for the next tick
+        waitNextTick();
+
+        // Perform trading based on the latest data and predictions
+        performTrading();
+    }
+
+    // Disconnect from the trading server
+    disconnectFromServer();
+
+    return 0;
+}
+
